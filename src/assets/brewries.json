@@ -1,0 +1,22 @@
+{
+  "breweries": [
+    {
+      "id": 1,
+      "name": "Small Batch",
+      "lat": -33.89655456778862,
+      "lng": 151.15940896977347,
+      "type": "Microbrewery",
+      "rating": 4.5,
+      "address": "292 Stanmore Rd, Petersham"
+    },
+    {
+      "id": 2,
+        "name": "Young Henrys - Craft Brewery and Tasting Bar",
+        "lat": -33.89799347315389,
+        "lng": 151.17446565628052,
+        "type": "Brewery",
+        "rating": 4.5,
+        "address": "76 Wilford St, Newtown"
+    }
+  ]
+}
