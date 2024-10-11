@@ -1,86 +1,89 @@
-<script lang="ts" >
-	import { onMount } from 'svelte';
-	import type { Tables } from '$lib/supabase';
+<script lang="ts">
 	import BreweryCard from '../components/BreweryCard.svelte';
+	import { MarkerIcon } from '$lib/icons';
+	import { divIcon, LatLng, latLngBounds, Map, marker, Polyline, polyline, tileLayer } from 'leaflet';
+	import type { Brewery, BreweryLocation, BrewerySteps } from '$lib/types';
+	import type { VroomResponse } from '$lib/routeoptimiser';
+
 
 	export let data;
-	// import breweriesData from '../assets/brewries.json';
-	const breweries: Tables<"brewries">[] = data.breweries;
-	console.log(breweries);
+	const breweries: Brewery[] = data.breweries;
+	let steps: BrewerySteps[] = [];
 
-	let selectedBreweries = [];
+	let selectedBreweries: Brewery[] = [];
 
 
-	onMount(async () => {
-		const  L = await import('leaflet');
-
-		function createPopupContent(brewery) {
-			return `
+	function createPopupContent(brewery: Brewery) {
+		return `
       <div class="popup-content">
         <h3>${brewery.name}</h3>
-        <p>${brewery.type}</p>
-        <p>Rating: ${brewery.rating}/5</p>
         <p>${brewery.address}</p>
       </div>
     `;
+	}
+
+	function creatMarker() {
+		const html = `<div class="map-marker"><div>${MarkerIcon}</div></div>`;
+		return divIcon({
+			html,
+			className: 'map-marker'
+		});
+	}
+
+	const initialView = new LatLng(-33.89655456778862, 151.15940896977347);
+
+	let map: Map | null = null;
+
+	function createMap(container: HTMLElement): Map {
+		let m = new Map(container, { preferCanvas: true }).setView(initialView, 16);
+		tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(m);
+
+		return m;
+	}
+
+	function mapAction(container: string | HTMLElement | null) {
+		container = (typeof container === 'string') ? document.getElementById(container) : container;
+		if (container === null) {
+			console.error('Container not found');
+			return;
 		}
 
-		const initialView = new L.LatLng(-33.89655456778862, 151.15940896977347);
-
-		let map: L.Map | null = null;
-		function createMap(container: HTMLElement): L.Map {
-			// let m = L.map(container, {preferCanvas: true }).setView(initialView, 5);
-			let m = new L.Map(container, {preferCanvas: true }).setView(initialView, 16);
-			L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				maxZoom: 19,
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-			}).addTo(m);
-
-			return m;
-		}
-
-		function mapAction(container: string | HTMLElement| null) {
-			container = (typeof container === 'string')?  document.getElementById(container): container;
-			if(container === null) {
-				console.error('Container not found');
+		map = createMap(container);
+		// Add markers for each brewery
+		breweries.forEach(brewery => {
+			console.log(brewery);
+			if (!map) {
 				return;
 			}
-
-			map = createMap(container);
-			// Add markers for each brewery
-			breweries.forEach(brewery => {
-				console.log(brewery);
-				if(brewery.lat === null || brewery.lng === null) return;
-				L.marker(new L.LatLng(brewery.lat, brewery.lng))
-					.bindPopup(createPopupContent(brewery))
-					.addTo(map);
-			});
-			return {
-				destroy() {
-					map.remove();
-					map = null;
+			const location = new LatLng(brewery.lat, brewery.lng);
+			marker(location, { icon: creatMarker() })
+				.bindPopup(createPopupContent(brewery))
+				.addTo(map);
+		});
+		return {
+			destroy() {
+				if (!map) {
+					return;
 				}
-			};
-		}
-		mapAction(document.getElementById('map'));
-	});
+				map.remove();
+				map = null;
+			}
+		};
+	}
 
-	// let breweries = breweriesData.breweries;
+	mapAction(document.getElementById('map'));
 
-
-	// const initialView = [39.8283, -98.5795];
-
-
-	//
-
-	//
-	function toggleBrewery(brewery) {
-		const index = selectedBreweries.findIndex(b => b.id === brewery.id);
-		if (index === -1) {
-			selectedBreweries = [...selectedBreweries, brewery];
-		} else {
+	function toggleBrewery(event: CustomEvent<Brewery>) {
+		const brewery = event.detail;
+		if (selectedBreweries.some(b => b.id === brewery.id)) {
 			selectedBreweries = selectedBreweries.filter(b => b.id !== brewery.id);
+		} else {
+			selectedBreweries = [...selectedBreweries, brewery];
 		}
+		console.log(selectedBreweries);
 	}
 
 	async function planRoute() {
@@ -88,35 +91,79 @@
 			alert('Please select at least 2 breweries');
 			return;
 		}
+		if (!map) {
+			return;
+		}
 
 		// Remove existing route if any
 		map.eachLayer((layer) => {
-			if (layer instanceof L.Polyline) {
-				map.removeLayer(layer);
+			if (layer instanceof Polyline) {
+				map?.removeLayer(layer);
 			}
 		});
+		// clear steps
+		steps = [];
 
-		// Sort breweries to create a simple route (this is where you'd implement a real routing algorithm)
-		const sortedBreweries = [...selectedBreweries].sort((a, b) => a.id - b.id);
-		const coordinates = sortedBreweries.map(b => [b.lat, b.lng]);
+		// generate list of breweries location
+		const breweriesCoordinates: BreweryLocation[] = selectedBreweries.map(brewery => {
+			return { id: brewery.id, lat: brewery.lat, lng: brewery.lng };
+		});
+
+		const response = await fetch('/api/routing', {
+			method: 'POST',
+			body: JSON.stringify(breweriesCoordinates),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		if (!response.ok) {
+			alert('Failed to plan route');
+			return;
+		}
+
+		const result: VroomResponse = await response.json();
+
+		steps = result.routes[0].steps.reduce((acc, step) => {
+			if(step.type === 'start' || step.type === 'end') {
+				acc.push({
+					step,
+					brewery: selectedBreweries[0]
+				})
+				return acc;
+			}
+
+			const brewery = breweries.find(b => b.id === step.job);
+			if (brewery) {
+				acc.push({ brewery, step });
+			}
+			return acc;
+		}, [] as BrewerySteps[]);
+		console.log(steps);
+
+		// Extract coordinates from the response
+		const coordinates = result.routes[0].steps.map(step => {
+			return new LatLng(step.location[1], step.location[0]);
+		});
 
 		// Draw new route
-		L.polyline(coordinates, {color: 'red'}).addTo(map);
+		polyline(coordinates, { color: 'red' }).addTo(map);
 
 		// Fit map bounds to show all selected breweries
-		const bounds = L.latLngBounds(coordinates);
-		map.fitBounds(bounds, {padding: [50, 50]});
+		const bounds = latLngBounds(coordinates);
+		map.fitBounds(bounds, { padding: [50, 50] });
 	}
 
 	function resizeMap() {
-		if(map) { map.invalidateSize(); }
+		if (map) {
+			map.invalidateSize();
+		}
 	}
 </script>
 <svelte:window on:resize={resizeMap} />
 
 <main class="h-screen">
 	<div class="flex h-full">
-		<div id="map" class="flex-grow" ></div>
+		<div id="map" class="flex-grow" use:mapAction></div>
 		<div class="w-96 bg-gray-50 p-6 overflow-y-auto">
 			<h2 class="text-2xl font-bold mb-6">Select Breweries</h2>
 
@@ -125,6 +172,7 @@
 					<BreweryCard
 						brewery={brewery}
 						isSelected={selectedBreweries.some(b => b.id === brewery.id)}
+						on:toggle={toggleBrewery}
 					/>
 				{/each}
 			</div>
@@ -138,6 +186,18 @@
 			>
 				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1 ? 'Brewery' : 'Breweries'}
 			</button>
+			{#if steps.length}
+				<div class="mt-6">
+					<h2 class="text-2xl font-bold mb-6">Route</h2>
+					<div class="space-y-4">
+						{#each steps as step}
+							<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+								<p>{step.brewery.name} - {step.step.duration}</p>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 </main>

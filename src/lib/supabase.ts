@@ -71,27 +71,27 @@ export type Database = {
           address: string | null
           created_at: string
           id: number
-          lat: number | null
-          lng: number | null
-          name: string | null
+          lat: number
+          lng: number
+          name: string
           phone: string | null
         }
         Insert: {
           address?: string | null
           created_at?: string
           id?: number
-          lat?: number | null
-          lng?: number | null
-          name?: string | null
+          lat: number
+          lng: number
+          name: string
           phone?: string | null
         }
         Update: {
           address?: string | null
           created_at?: string
           id?: number
-          lat?: number | null
-          lng?: number | null
-          name?: string | null
+          lat?: number
+          lng?: number
+          name?: string
           phone?: string | null
         }
         Relationships: []

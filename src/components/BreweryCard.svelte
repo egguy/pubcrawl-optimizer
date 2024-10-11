@@ -1,8 +1,16 @@
 <script lang="ts">
-	import type { Tables } from '$lib/supabase';
+	import { createEventDispatcher } from 'svelte';
+	import type { Brewery } from '$lib/types';
 
-	export let brewery: Tables<'brewries'>
-	export let isSelected: boolean = false;
+	const dispatch = createEventDispatcher<{ toggle: Brewery }>();
+
+	export let brewery: Brewery
+	export let isSelected: boolean = false
+
+	function toggle() {
+		dispatch('toggle', brewery)
+		isSelected = !isSelected
+	}
 </script>
 
 <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
@@ -11,7 +19,7 @@
 			type="checkbox"
 			class="mt-1 h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
 			checked={isSelected}
-
+			on:change={toggle}
 		>
 		<div class="flex-1">
 			<h3 class="font-semibold text-lg">{brewery.name}</h3>
