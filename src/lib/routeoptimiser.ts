@@ -31,19 +31,39 @@ interface VroomRequest {
 export interface VroomStep {
 	type: "start" | "job" | "end";
 	job?: number;
+	id?: number;
 	location: LongLat;
 	arrival: number;
 	duration: number;
 	waiting_time: number;
 	service: number;
+	distance?: number;
 }
 
 interface VroomRoute {
 	steps: VroomStep[];
 }
 
+interface Summary {
+	cost: number;
+	routes: number;
+	unassigned: number;
+	setup: number;
+	service: number;
+	duration: number;
+	waiting_time: number;
+	priority: number;
+	violations: any[];
+	computing_times: {
+		loading: number;
+		solving: number;
+		routing: number;
+	};
+}
+
 export interface VroomResponse {
 	code: number;
+	summary: Summary;
 	routes: VroomRoute[];
 }
 

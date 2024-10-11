@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BreweryCard from '../components/BreweryCard.svelte';
-	import { MarkerIcon } from '$lib/icons';
+	import {  MarkerIcon } from '$lib/icons';
 	import { divIcon, LatLng, latLngBounds, Map, marker, Polyline, polyline, tileLayer } from 'leaflet';
 	import type { Brewery, BreweryLocation, BrewerySteps } from '$lib/types';
 	import type { VroomResponse } from '$lib/routeoptimiser';
@@ -11,6 +11,7 @@
 	let steps: BrewerySteps[] = [];
 
 	let selectedBreweries: Brewery[] = [];
+	let routingResult: VroomResponse | null = null;
 
 
 	function createPopupContent(brewery: Brewery) {
@@ -103,6 +104,7 @@
 		});
 		// clear steps
 		steps = [];
+		routingResult = null;
 
 		// generate list of breweries location
 		const breweriesCoordinates: BreweryLocation[] = selectedBreweries.map(brewery => {
@@ -121,27 +123,34 @@
 			return;
 		}
 
-		const result: VroomResponse = await response.json();
+		routingResult = await response.json();
+		if(!routingResult) {
+			alert('Failed to plan route');
+			return;
+		}
 
-		steps = result.routes[0].steps.reduce((acc, step) => {
-			if(step.type === 'start' || step.type === 'end') {
+		let lastTravelTime = 0;
+		steps = routingResult.routes[0].steps.reduce((acc, step) => {
+			if (step.type === 'start' || step.type === 'end') {
 				acc.push({
 					step,
-					brewery: selectedBreweries[0]
-				})
+					brewery: selectedBreweries[0],
+					travelTime: step.type === 'start' ? 0 : step.duration - lastTravelTime
+				});
 				return acc;
 			}
 
-			const brewery = breweries.find(b => b.id === step.job);
+			const brewery = breweries.find(b => b.id === step.id);
 			if (brewery) {
-				acc.push({ brewery, step });
+				acc.push({ brewery, step, travelTime: step.duration - lastTravelTime });
+				lastTravelTime = step.duration;
 			}
 			return acc;
 		}, [] as BrewerySteps[]);
 		console.log(steps);
 
 		// Extract coordinates from the response
-		const coordinates = result.routes[0].steps.map(step => {
+		const coordinates = routingResult.routes[0].steps.map(step => {
 			return new LatLng(step.location[1], step.location[0]);
 		});
 
@@ -186,13 +195,29 @@
 			>
 				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1 ? 'Brewery' : 'Breweries'}
 			</button>
-			{#if steps.length}
+			{#if routingResult}
 				<div class="mt-6">
 					<h2 class="text-2xl font-bold mb-6">Route</h2>
+					<p>
+						Total Duration: {routingResult.summary.duration}s
+					</p>
 					<div class="space-y-4">
 						{#each steps as step}
+							{#if step.step.type !== 'start'}
+								<!-- Show travel time for each step except the start and centered-->
+								<div class="text-center">
+									<p>↓ Travel Time: {step.travelTime}s</p>
+								</div>
+
+							{/if}
 							<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-								<p>{step.brewery.name} - {step.step.duration}</p>
+								{#if step.step.type === 'start'}
+									<p>Start at {step.brewery.name}</p>
+								{:else if step.step.type === 'end'}
+									<p>End at {step.brewery.name}</p>
+								{:else}
+									<p>{step.brewery.name}</p>
+								{/if}
 							</div>
 						{/each}
 					</div>

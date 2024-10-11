@@ -7,4 +7,5 @@ export type BreweryLocation = Pick<Brewery, "id"|"lat"|"lng">;
 export interface BrewerySteps {
 	brewery: Brewery;
 	step: VroomStep;
+	travelTime: number;
 }
