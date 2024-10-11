@@ -58,8 +58,7 @@ export class RouteOptimizer {
 
 		const request = this.createVroomRequest(breweries);
 		const optimizedRoute = await this.callOptimizationApi(request);
-		console.log("Route Optimized", optimizedRoute);
-		console.log("Steps", optimizedRoute.routes[0].steps);
+
 		return this.processResponse(optimizedRoute);
 	}
 
