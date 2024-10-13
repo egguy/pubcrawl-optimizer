@@ -6,7 +6,8 @@
 		geoJSON,
 		LatLng,
 		latLngBounds,
-		Map, Marker,
+		Map,
+		Marker,
 		// marker,
 		Polyline,
 		polyline,
@@ -16,15 +17,14 @@
 	import type { VroomResponse } from '$lib/routeoptimiser';
 	import type { Feature, FeatureCollection } from 'geojson';
 
-	import markerIconUrl from "leaflet/dist/images/marker-icon.png";
-	import markerIconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
-	import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
-	import * as L from "leaflet";
+	import markerIconUrl from 'leaflet/dist/images/marker-icon.png';
+	import markerIconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
+	import markerShadowUrl from 'leaflet/dist/images/marker-shadow.png';
+	import * as L from 'leaflet';
 	L.Icon.Default.prototype.options.iconUrl = markerIconUrl;
 	L.Icon.Default.prototype.options.iconRetinaUrl = markerIconRetinaUrl;
 	L.Icon.Default.prototype.options.shadowUrl = markerShadowUrl;
-	L.Icon.Default.imagePath = ""; // necessary to avoid Leaflet adds some prefix to image path.
-
+	L.Icon.Default.imagePath = ''; // necessary to avoid Leaflet adds some prefix to image path.
 
 	export let data;
 	const breweries: Brewery[] = data.breweries;
@@ -33,16 +33,17 @@
 		brewery: Brewery;
 	}[] = breweries.map((brewery) => {
 		const location = new LatLng(brewery.lat, brewery.lng);
-		const marker = L.marker(location, { icon: creatMarker() }).bindPopup(createPopupContent(brewery));
+		const marker = L.marker(location, { icon: creatMarker() }).bindPopup(
+			createPopupContent(brewery)
+		);
 		return { marker, brewery };
 	});
-
 
 	let steps: BrewerySteps[] = [];
 
 	let selectedBreweries: Brewery[] = [];
 	let routingResult: VroomResponse | null = null;
-	let totalDuration = 0;
+	// let totalDuration = 0;
 	let totalDistance = 0;
 
 	function createPopupContent(brewery: Brewery) {
@@ -55,7 +56,7 @@
 	}
 
 	function creatMarker(color?: string) {
-		color = color || "0000";
+		color = color || '0000';
 		const html = `<div class="map-marker" style="color: ${color}">
 										${MarkerIcon}
 								</div>`;
@@ -63,12 +64,11 @@
 			html,
 			className: 'map-marker',
 			iconSize: [40, 40],
-			iconAnchor: [20,5],
+			iconAnchor: [20, 5]
 		});
 	}
 
 	const initialView = latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng()));
-
 
 	let map: Map | null = null;
 	const routeLayer = L.featureGroup();
@@ -117,10 +117,9 @@
 		const brewery = event.detail;
 		// get brewryCooridnate object
 		const breweryCoordinate = breweriesCoordinates.find((b) => b.brewery.id === brewery.id);
-		if(!breweryCoordinate) {
+		if (!breweryCoordinate) {
 			return;
 		}
-
 
 		if (selectedBreweries.some((b) => b.id === brewery.id)) {
 			// deselect
@@ -128,7 +127,7 @@
 			breweryCoordinate.marker.setIcon(creatMarker());
 		} else {
 			selectedBreweries = [...selectedBreweries, brewery];
-			breweryCoordinate.marker.setIcon(creatMarker("red"));
+			breweryCoordinate.marker.setIcon(creatMarker('red'));
 		}
 		console.log(selectedBreweries);
 	}
@@ -203,41 +202,43 @@
 		routeLayer.clearLayers();
 		const routes: Feature[] = [];
 		// get route between each pair of points
-		await Promise.all( coordinates.map(async (coordinate, index) => {
-			if (index < coordinates.length - 1) {
-				const nextCoordinate = coordinates[index + 1];
-				const query = {
-					start: [coordinate.lng, coordinate.lat],
-					end: [nextCoordinate.lng, nextCoordinate.lat]
-				};
+		await Promise.all(
+			coordinates.map(async (coordinate, index) => {
+				if (index < coordinates.length - 1) {
+					const nextCoordinate = coordinates[index + 1];
+					const query = {
+						start: [coordinate.lng, coordinate.lat],
+						end: [nextCoordinate.lng, nextCoordinate.lat]
+					};
 
-				try {
-					const data = await fetch('/api/router', {
-						method: 'POST',
-						body: JSON.stringify(query),
-						headers: {
-							'Content-Type': 'application/json'
-						}
-					});
-					const response: FeatureCollection = await data.json();
-					console.log('Route sugession', response);
+					try {
+						const data = await fetch('/api/router', {
+							method: 'POST',
+							body: JSON.stringify(query),
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						});
+						const response: FeatureCollection = await data.json();
+						console.log('Route sugession', response);
 
-					L.geoJSON(response.features[0]).addTo(routeLayer)
-					totalDistance += response.features.reduce((acc, feature) => {
-						// round to nearest meter
-						acc += Math.round(feature.properties?.summary.distance);
-						return acc;
-					}, 0);
-					// routeLayer.();
-				} catch (error) {
-					console.error(error);
-					polyline([coordinate, nextCoordinate], { color: 'red' }).addTo(routeLayer);
+						L.geoJSON(response.features[0]).addTo(routeLayer);
+						totalDistance += response.features.reduce((acc, feature) => {
+							// round to nearest meter
+							acc += Math.round(feature.properties?.summary.distance);
+							return acc;
+						}, 0);
+						// routeLayer.();
+					} catch (error) {
+						console.error(error);
+						polyline([coordinate, nextCoordinate], { color: 'red' }).addTo(routeLayer);
+					}
+
+					geoJSON(routes).addTo(routeLayer);
+					// .addTo(map);
 				}
-
-				geoJSON(routes).addTo(routeLayer);
-				// .addTo(map);
-			}
-		}));
+			})
+		);
 
 		map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
 	}
