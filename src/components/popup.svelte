@@ -1,9 +1,9 @@
 <script lang="ts">
 	let brewery: {
-		name: string,
-		type: string,
-		rating: number,
-		address: string
+		name: string;
+		type: string;
+		rating: number;
+		address: string;
 	};
 </script>
 

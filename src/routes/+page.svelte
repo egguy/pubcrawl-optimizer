@@ -1,10 +1,20 @@
 <script lang="ts">
 	import BreweryCard from '../components/BreweryCard.svelte';
-	import {  MarkerIcon } from '$lib/icons';
-	import { divIcon, LatLng, latLngBounds, Map, marker, Polyline, polyline, tileLayer } from 'leaflet';
+	import { MarkerIcon } from '$lib/icons';
+	import {
+		divIcon,
+		geoJSON,
+		LatLng,
+		latLngBounds,
+		Map,
+		marker,
+		Polyline,
+		polyline,
+		tileLayer
+	} from 'leaflet';
 	import type { Brewery, BreweryLocation, BrewerySteps } from '$lib/types';
 	import type { VroomResponse } from '$lib/routeoptimiser';
-
+	import type { Feature, FeatureCollection } from 'geojson';
 
 	export let data;
 	const breweries: Brewery[] = data.breweries;
@@ -12,7 +22,6 @@
 
 	let selectedBreweries: Brewery[] = [];
 	let routingResult: VroomResponse | null = null;
-
 
 	function createPopupContent(brewery: Brewery) {
 		return `
@@ -34,19 +43,21 @@
 	const initialView = new LatLng(-33.89655456778862, 151.15940896977347);
 
 	let map: Map | null = null;
+	const routeLayer = geoJSON();
 
 	function createMap(container: HTMLElement): Map {
 		let m = new Map(container, { preferCanvas: true }).setView(initialView, 16);
 		tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
-			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			attribution:
+				'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(m);
-
+		routeLayer.addTo(m);
 		return m;
 	}
 
 	function mapAction(container: string | HTMLElement | null) {
-		container = (typeof container === 'string') ? document.getElementById(container) : container;
+		container = typeof container === 'string' ? document.getElementById(container) : container;
 		if (container === null) {
 			console.error('Container not found');
 			return;
@@ -54,15 +65,13 @@
 
 		map = createMap(container);
 		// Add markers for each brewery
-		breweries.forEach(brewery => {
+		breweries.forEach((brewery) => {
 			console.log(brewery);
 			if (!map) {
 				return;
 			}
 			const location = new LatLng(brewery.lat, brewery.lng);
-			marker(location, { icon: creatMarker() })
-				.bindPopup(createPopupContent(brewery))
-				.addTo(map);
+			marker(location, { icon: creatMarker() }).bindPopup(createPopupContent(brewery)).addTo(map);
 		});
 		return {
 			destroy() {
@@ -79,8 +88,8 @@
 
 	function toggleBrewery(event: CustomEvent<Brewery>) {
 		const brewery = event.detail;
-		if (selectedBreweries.some(b => b.id === brewery.id)) {
-			selectedBreweries = selectedBreweries.filter(b => b.id !== brewery.id);
+		if (selectedBreweries.some((b) => b.id === brewery.id)) {
+			selectedBreweries = selectedBreweries.filter((b) => b.id !== brewery.id);
 		} else {
 			selectedBreweries = [...selectedBreweries, brewery];
 		}
@@ -107,11 +116,11 @@
 		routingResult = null;
 
 		// generate list of breweries location
-		const breweriesCoordinates: BreweryLocation[] = selectedBreweries.map(brewery => {
+		const breweriesCoordinates: BreweryLocation[] = selectedBreweries.map((brewery) => {
 			return { id: brewery.id, lat: brewery.lat, lng: brewery.lng };
 		});
 
-		const response = await fetch('/api/routing', {
+		const response = await fetch('/api/optimiser', {
 			method: 'POST',
 			body: JSON.stringify(breweriesCoordinates),
 			headers: {
@@ -124,7 +133,7 @@
 		}
 
 		routingResult = await response.json();
-		if(!routingResult) {
+		if (!routingResult) {
 			alert('Failed to plan route');
 			return;
 		}
@@ -140,7 +149,7 @@
 				return acc;
 			}
 
-			const brewery = breweries.find(b => b.id === step.id);
+			const brewery = breweries.find((b) => b.id === step.id);
 			if (brewery) {
 				acc.push({ brewery, step, travelTime: step.duration - lastTravelTime });
 				lastTravelTime = step.duration;
@@ -150,15 +159,48 @@
 		console.log(steps);
 
 		// Extract coordinates from the response
-		const coordinates = routingResult.routes[0].steps.map(step => {
+		const coordinates = routingResult.routes[0].steps.map((step) => {
 			return new LatLng(step.location[1], step.location[0]);
 		});
 
+		routeLayer.clearLayers();
+		const routes: Feature[] = [];
+		// get route between each pair of points
+		coordinates.map(async (coordinate, index) => {
+			if (index < coordinates.length - 1) {
+				const nextCoordinate = coordinates[index + 1];
+				const query = {
+					start: [coordinate.lng, coordinate.lat],
+					end: [nextCoordinate.lng, nextCoordinate.lat]
+				};
+
+				try {
+					const data = await fetch('/api/router', {
+						method: 'POST',
+						body: JSON.stringify(query),
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					});
+					const response: FeatureCollection = await data.json();
+					console.log('Route sugession', response);
+
+					routeLayer.addData(response.features[0]);
+				} catch (error) {
+					console.error(error);
+					routeLayer.addData(polyline([coordinate, nextCoordinate], { color: 'red' }).toGeoJSON());
+				}
+
+				geoJSON(routes).addTo(routeLayer);
+				// .addTo(map);
+			}
+		});
+
 		// Draw new route
-		polyline(coordinates, { color: 'red' }).addTo(map);
+		// polyline(coordinates, { color: 'red' }).addTo(map);
 
 		// Fit map bounds to show all selected breweries
-		const bounds = latLngBounds(coordinates);
+		const bounds = latLngBounds(routeLayer);
 		map.fitBounds(bounds, { padding: [50, 50] });
 	}
 
@@ -168,6 +210,7 @@
 		}
 	}
 </script>
+
 <svelte:window on:resize={resizeMap} />
 
 <main class="h-screen">
@@ -179,8 +222,8 @@
 			<div class="space-y-4">
 				{#each breweries as brewery}
 					<BreweryCard
-						brewery={brewery}
-						isSelected={selectedBreweries.some(b => b.id === brewery.id)}
+						{brewery}
+						isSelected={selectedBreweries.some((b) => b.id === brewery.id)}
 						on:toggle={toggleBrewery}
 					/>
 				{/each}
@@ -193,7 +236,9 @@
                hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
 			>
-				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1 ? 'Brewery' : 'Breweries'}
+				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1
+					? 'Brewery'
+					: 'Breweries'}
 			</button>
 			{#if routingResult}
 				<div class="mt-6">
@@ -208,7 +253,6 @@
 								<div class="text-center">
 									<p>↓ Travel Time: {step.travelTime}s</p>
 								</div>
-
 							{/if}
 							<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
 								{#if step.step.type === 'start'}
@@ -228,7 +272,7 @@
 </main>
 
 <style>
-    :global(body) {
-        @apply m-0 p-0 font-sans;
-    }
+	:global(body) {
+		@apply m-0 p-0 font-sans;
+	}
 </style>

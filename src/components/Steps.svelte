@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { BrewerySteps } from '$lib/types';
 
-	export let steps: BrewerySteps[] = []
-
-	</script>
+	export let steps: BrewerySteps[] = [];
+</script>
 
 <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
 	<p>Steps</p>
@@ -14,6 +13,4 @@
 			</li>
 		{/each}
 	</ul>
-
-
 </div>

@@ -4,12 +4,12 @@
 
 	const dispatch = createEventDispatcher<{ toggle: Brewery }>();
 
-	export let brewery: Brewery
-	export let isSelected: boolean = false
+	export let brewery: Brewery;
+	export let isSelected: boolean = false;
 
 	function toggle() {
-		dispatch('toggle', brewery)
-		isSelected = !isSelected
+		dispatch('toggle', brewery);
+		isSelected = !isSelected;
 	}
 </script>
 
@@ -20,11 +20,11 @@
 			class="mt-1 h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
 			checked={isSelected}
 			on:change={toggle}
-		>
+		/>
 		<div class="flex-1">
 			<h3 class="font-semibold text-lg">{brewery.name}</h3>
 			{#if brewery.address}
-			<p class="text-xs text-gray-500 mt-1">{brewery.address}</p>
+				<p class="text-xs text-gray-500 mt-1">{brewery.address}</p>
 			{/if}
 		</div>
 	</label>

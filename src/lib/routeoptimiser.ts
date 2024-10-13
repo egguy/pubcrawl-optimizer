@@ -1,7 +1,5 @@
 import { ORS_TOKEN } from '$env/static/private';
-import type { BreweryLocation } from '$lib/types';
-
-type LongLat = [number, number];
+import type { BreweryLocation, LongLat, routingProfile } from '$lib/types';
 
 interface VroomJob {
 	id: number;
@@ -10,15 +8,7 @@ interface VroomJob {
 
 interface Vehicle {
 	id: number;
-	profile:
-		| 'driving-car'
-		| 'driving-hgv'
-		| 'foot-walking'
-		| 'foot-hiking'
-		| 'cycling-regular'
-		| 'cycling-road'
-		| 'cycling-mountain'
-		| 'cycling-electric';
+	profile: routingProfile;
 	start: LongLat;
 	end: LongLat;
 }
@@ -29,7 +19,7 @@ interface VroomRequest {
 }
 
 export interface VroomStep {
-	type: "start" | "job" | "end";
+	type: 'start' | 'job' | 'end';
 	job?: number;
 	id?: number;
 	location: LongLat;
@@ -53,7 +43,7 @@ interface Summary {
 	duration: number;
 	waiting_time: number;
 	priority: number;
-	violations: any[];
+	// violations: any[];
 	computing_times: {
 		loading: number;
 		solving: number;
@@ -91,12 +81,14 @@ export class RouteOptimizer {
 
 		return {
 			jobs,
-			vehicles: [{
-				id: 0,
-				profile: "foot-walking",
-				start: [startBrewery.lng, startBrewery.lat],
-				end: [startBrewery.lng, startBrewery.lat]
-			}]
+			vehicles: [
+				{
+					id: 0,
+					profile: 'foot-walking',
+					start: [startBrewery.lng, startBrewery.lat],
+					end: [startBrewery.lng, startBrewery.lat]
+				}
+			]
 		};
 	}
 
@@ -105,7 +97,7 @@ export class RouteOptimizer {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': this.apiKey
+				Authorization: this.apiKey
 			},
 			body: JSON.stringify(request)
 		});
@@ -121,12 +113,6 @@ export class RouteOptimizer {
 		if (response.code !== 0 || !response.routes?.[0]) {
 			throw new Error('Invalid response from optimization service');
 		}
-		return response
-
-		// const route = response.routes[0];
-		// return route.steps.map(step => {
-		// 	const [lng, lat] = step.location;
-		// 	return [lat, lng]; // Convert back to [lat, lng] for Leaflet
-		// });
+		return response;
 	}
 }
