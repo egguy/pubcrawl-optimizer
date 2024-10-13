@@ -6,8 +6,8 @@
 		geoJSON,
 		LatLng,
 		latLngBounds,
-		Map,
-		marker,
+		Map, Marker,
+		// marker,
 		Polyline,
 		polyline,
 		tileLayer
@@ -16,12 +16,34 @@
 	import type { VroomResponse } from '$lib/routeoptimiser';
 	import type { Feature, FeatureCollection } from 'geojson';
 
+	import markerIconUrl from "leaflet/dist/images/marker-icon.png";
+	import markerIconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+	import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
+	import * as L from "leaflet";
+	L.Icon.Default.prototype.options.iconUrl = markerIconUrl;
+	L.Icon.Default.prototype.options.iconRetinaUrl = markerIconRetinaUrl;
+	L.Icon.Default.prototype.options.shadowUrl = markerShadowUrl;
+	L.Icon.Default.imagePath = ""; // necessary to avoid Leaflet adds some prefix to image path.
+
+
 	export let data;
 	const breweries: Brewery[] = data.breweries;
+	const breweriesCoordinates: {
+		marker: Marker;
+		brewery: Brewery;
+	}[] = breweries.map((brewery) => {
+		const location = new LatLng(brewery.lat, brewery.lng);
+		const marker = L.marker(location, { icon: creatMarker() }).bindPopup(createPopupContent(brewery));
+		return { marker, brewery };
+	});
+
+
 	let steps: BrewerySteps[] = [];
 
 	let selectedBreweries: Brewery[] = [];
 	let routingResult: VroomResponse | null = null;
+	let totalDuration = 0;
+	let totalDistance = 0;
 
 	function createPopupContent(brewery: Brewery) {
 		return `
@@ -32,21 +54,27 @@
     `;
 	}
 
-	function creatMarker() {
-		const html = `<div class="map-marker"><div>${MarkerIcon}</div></div>`;
+	function creatMarker(color?: string) {
+		color = color || "0000";
+		const html = `<div class="map-marker" style="color: ${color}">
+										${MarkerIcon}
+								</div>`;
 		return divIcon({
 			html,
-			className: 'map-marker'
+			className: 'map-marker',
+			iconSize: [40, 40],
+			iconAnchor: [20,5],
 		});
 	}
 
-	const initialView = new LatLng(-33.89655456778862, 151.15940896977347);
+	const initialView = latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng()));
+
 
 	let map: Map | null = null;
-	const routeLayer = geoJSON();
+	const routeLayer = L.featureGroup();
 
 	function createMap(container: HTMLElement): Map {
-		let m = new Map(container, { preferCanvas: true }).setView(initialView, 16);
+		let m = new Map(container, { preferCanvas: true }).setView(initialView.getCenter(), 14);
 		tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution:
@@ -65,14 +93,13 @@
 
 		map = createMap(container);
 		// Add markers for each brewery
-		breweries.forEach((brewery) => {
-			console.log(brewery);
+		breweriesCoordinates.forEach((brewery) => {
 			if (!map) {
 				return;
 			}
-			const location = new LatLng(brewery.lat, brewery.lng);
-			marker(location, { icon: creatMarker() }).bindPopup(createPopupContent(brewery)).addTo(map);
+			brewery.marker.addTo(map);
 		});
+
 		return {
 			destroy() {
 				if (!map) {
@@ -88,10 +115,20 @@
 
 	function toggleBrewery(event: CustomEvent<Brewery>) {
 		const brewery = event.detail;
+		// get brewryCooridnate object
+		const breweryCoordinate = breweriesCoordinates.find((b) => b.brewery.id === brewery.id);
+		if(!breweryCoordinate) {
+			return;
+		}
+
+
 		if (selectedBreweries.some((b) => b.id === brewery.id)) {
+			// deselect
 			selectedBreweries = selectedBreweries.filter((b) => b.id !== brewery.id);
+			breweryCoordinate.marker.setIcon(creatMarker());
 		} else {
 			selectedBreweries = [...selectedBreweries, brewery];
+			breweryCoordinate.marker.setIcon(creatMarker("red"));
 		}
 		console.log(selectedBreweries);
 	}
@@ -166,7 +203,7 @@
 		routeLayer.clearLayers();
 		const routes: Feature[] = [];
 		// get route between each pair of points
-		coordinates.map(async (coordinate, index) => {
+		await Promise.all( coordinates.map(async (coordinate, index) => {
 			if (index < coordinates.length - 1) {
 				const nextCoordinate = coordinates[index + 1];
 				const query = {
@@ -185,23 +222,24 @@
 					const response: FeatureCollection = await data.json();
 					console.log('Route sugession', response);
 
-					routeLayer.addData(response.features[0]);
+					L.geoJSON(response.features[0]).addTo(routeLayer)
+					totalDistance += response.features.reduce((acc, feature) => {
+						// round to nearest meter
+						acc += Math.round(feature.properties?.summary.distance);
+						return acc;
+					}, 0);
+					// routeLayer.();
 				} catch (error) {
 					console.error(error);
-					routeLayer.addData(polyline([coordinate, nextCoordinate], { color: 'red' }).toGeoJSON());
+					polyline([coordinate, nextCoordinate], { color: 'red' }).addTo(routeLayer);
 				}
 
 				geoJSON(routes).addTo(routeLayer);
 				// .addTo(map);
 			}
-		});
+		}));
 
-		// Draw new route
-		// polyline(coordinates, { color: 'red' }).addTo(map);
-
-		// Fit map bounds to show all selected breweries
-		const bounds = latLngBounds(routeLayer);
-		map.fitBounds(bounds, { padding: [50, 50] });
+		map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
 	}
 
 	function resizeMap() {
@@ -220,10 +258,10 @@
 			<h2 class="text-2xl font-bold mb-6">Select Breweries</h2>
 
 			<div class="space-y-4">
-				{#each breweries as brewery}
+				{#each breweriesCoordinates as breweryCoordinate}
 					<BreweryCard
-						{brewery}
-						isSelected={selectedBreweries.some((b) => b.id === brewery.id)}
+						brewery={breweryCoordinate.brewery}
+						isSelected={selectedBreweries.some((b) => b.id === breweryCoordinate.brewery.id)}
 						on:toggle={toggleBrewery}
 					/>
 				{/each}
@@ -244,7 +282,7 @@
 				<div class="mt-6">
 					<h2 class="text-2xl font-bold mb-6">Route</h2>
 					<p>
-						Total Duration: {routingResult.summary.duration}s
+						Total Duration: {routingResult.summary.duration}s ({totalDistance}m)
 					</p>
 					<div class="space-y-4">
 						{#each steps as step}
