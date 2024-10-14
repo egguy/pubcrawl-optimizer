@@ -26,14 +26,18 @@
 	L.Icon.Default.prototype.options.shadowUrl = markerShadowUrl;
 	L.Icon.Default.imagePath = ''; // necessary to avoid Leaflet adds some prefix to image path.
 
-	export let data;
-	const breweries: Brewery[] = data.breweries;
-	const breweriesCoordinates: {
+	interface BreweryCoordinate {
 		marker: Marker;
 		brewery: Brewery;
-	}[] = breweries.map((brewery) => {
+	}
+
+	export let data;
+	const breweries: Brewery[] = data.breweries;
+	let selectedBreweries: Brewery[] = [];
+
+	const breweriesCoordinates: BreweryCoordinate[] = breweries.map((brewery) => {
 		const location = new LatLng(brewery.lat, brewery.lng);
-		const marker = L.marker(location, { icon: creatMarker() }).bindPopup(
+		const marker = L.marker(location, { icon: creatMarker(brewery) }).bindPopup(
 			createPopupContent(brewery)
 		);
 		return { marker, brewery };
@@ -41,10 +45,16 @@
 
 	let steps: BrewerySteps[] = [];
 
-	let selectedBreweries: Brewery[] = [];
+
 	let routingResult: VroomResponse | null = null;
 	// let totalDuration = 0;
 	let totalDistance = 0;
+
+	const initialView = latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng()));
+
+	let map: Map | null = null;
+	const routeLayer = L.featureGroup();
+
 
 	function createPopupContent(brewery: Brewery) {
 		return `
@@ -54,9 +64,18 @@
       </div>
     `;
 	}
+	function isSelected(brewery: Brewery):boolean {
+		return selectedBreweries.some((b) => b.id === brewery.id);
+	}
 
-	function creatMarker(color?: string) {
-		color = color || '0000';
+	function creatMarker(brewery: Brewery, color?: string) {
+		if(!color){
+			if(isSelected(brewery)){
+				color = 'red';
+			} else {
+				color = '0000';
+			}
+		}
 		const html = `<div class="map-marker" style="color: ${color}">
 										${MarkerIcon}
 								</div>`;
@@ -68,10 +87,6 @@
 		});
 	}
 
-	const initialView = latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng()));
-
-	let map: Map | null = null;
-	const routeLayer = L.featureGroup();
 
 	function createMap(container: HTMLElement): Map {
 		let m = new Map(container, { preferCanvas: true }).setView(initialView.getCenter(), 14);
@@ -124,10 +139,10 @@
 		if (selectedBreweries.some((b) => b.id === brewery.id)) {
 			// deselect
 			selectedBreweries = selectedBreweries.filter((b) => b.id !== brewery.id);
-			breweryCoordinate.marker.setIcon(creatMarker());
+			breweryCoordinate.marker.setIcon(creatMarker(brewery));
 		} else {
 			selectedBreweries = [...selectedBreweries, brewery];
-			breweryCoordinate.marker.setIcon(creatMarker('red'));
+			breweryCoordinate.marker.setIcon(creatMarker(brewery));
 		}
 		console.log(selectedBreweries);
 	}
@@ -264,6 +279,8 @@
 						brewery={breweryCoordinate.brewery}
 						isSelected={selectedBreweries.some((b) => b.id === breweryCoordinate.brewery.id)}
 						on:toggle={toggleBrewery}
+						on:mouseenter={() => {breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery, 'green')); console.log('hover')}}
+						on:mouseleave={() => breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery))}
 					/>
 				{/each}
 			</div>
