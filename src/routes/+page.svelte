@@ -13,7 +13,7 @@
 		polyline,
 		tileLayer
 	} from 'leaflet';
-	import type { Brewery, BreweryLocation, BrewerySteps } from '$lib/types';
+	import type { Brewery, BrewerySteps, RouteQuery } from '$lib/types';
 	import type { VroomResponse } from '$lib/routeoptimiser';
 	import type { Feature, FeatureCollection } from 'geojson';
 
@@ -21,6 +21,7 @@
 	import markerIconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 	import markerShadowUrl from 'leaflet/dist/images/marker-shadow.png';
 	import * as L from 'leaflet';
+
 	L.Icon.Default.prototype.options.iconUrl = markerIconUrl;
 	L.Icon.Default.prototype.options.iconRetinaUrl = markerIconRetinaUrl;
 	L.Icon.Default.prototype.options.shadowUrl = markerShadowUrl;
@@ -34,6 +35,9 @@
 	export let data;
 	const breweries: Brewery[] = data.breweries;
 	let selectedBreweries: Brewery[] = [];
+	let startPoint: LatLng|null = null;
+	let sameEndPoint = false;
+	let endPoint: LatLng|null = null;
 
 	const breweriesCoordinates: BreweryCoordinate[] = breweries.map((brewery) => {
 		const location = new LatLng(brewery.lat, brewery.lng);
@@ -64,13 +68,14 @@
       </div>
     `;
 	}
-	function isSelected(brewery: Brewery):boolean {
+
+	function isSelected(brewery: Brewery): boolean {
 		return selectedBreweries.some((b) => b.id === brewery.id);
 	}
 
 	function creatMarker(brewery: Brewery, color?: string) {
-		if(!color){
-			if(isSelected(brewery)){
+		if (!color) {
+			if (isSelected(brewery)) {
 				color = 'red';
 			} else {
 				color = '0000';
@@ -114,6 +119,8 @@
 			}
 			brewery.marker.addTo(map);
 		});
+
+		map.on('click', onMapClick);
 
 		return {
 			destroy() {
@@ -167,13 +174,20 @@
 		routingResult = null;
 
 		// generate list of breweries location
-		const breweriesCoordinates: BreweryLocation[] = selectedBreweries.map((brewery) => {
-			return { id: brewery.id, lat: brewery.lat, lng: brewery.lng };
-		});
-
+		if(!startPoint || !endPoint){
+			alert('Please select start and end point');
+			return;
+		}
+		const routeQuery:RouteQuery = {
+			start: [startPoint.lng, startPoint.lat],
+			end: [endPoint.lng, endPoint.lat],
+			breweries: selectedBreweries.map((brewery) => {
+				return { id: brewery.id, lat: brewery.lat, lng: brewery.lng };
+			})
+		}
 		const response = await fetch('/api/optimiser', {
 			method: 'POST',
-			body: JSON.stringify(breweriesCoordinates),
+			body: JSON.stringify(routeQuery),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -194,7 +208,7 @@
 			if (step.type === 'start' || step.type === 'end') {
 				acc.push({
 					step,
-					brewery: selectedBreweries[0],
+					brewery: null,
 					travelTime: step.type === 'start' ? 0 : step.duration - lastTravelTime
 				});
 				return acc;
@@ -263,11 +277,46 @@
 			map.invalidateSize();
 		}
 	}
+
+	function onMapClick(e: L.LeafletMouseEvent) {
+		if(!map){
+			return;
+		}
+		if (startPoint === null) {
+			startPoint = e.latlng;
+			new L.Marker(e.latlng).addTo(map);
+			if(sameEndPoint){
+				endPoint = e.latlng;
+			}
+		} else if (endPoint === null) {
+			endPoint = e.latlng;
+			new L.Marker(e.latlng).addTo(map);
+
+		}
+	}
+
+	function updateEndPoint(){
+		console.log('updateEndPoint', sameEndPoint);
+		sameEndPoint = !sameEndPoint;
+		if(sameEndPoint){
+			endPoint = startPoint;
+		}
+	}
 </script>
 
 <svelte:window on:resize={resizeMap} />
 
 <main class="h-screen">
+	<div class="flex w-full">
+		<!-- input for start point -->
+		<div>
+				<span class="mr-3">Start Point :{startPoint? "✔": "❌"}</span>
+
+			  <input type="checkbox" name="same" id="same" on:change={updateEndPoint} />
+				<label for="same" class="mr-3">Same as End Point</label>
+				<span>End Point :{endPoint? "✔": "❌"}</span>
+		</div>
+	</div>
 	<div class="flex h-full">
 		<div id="map" class="flex-grow" use:mapAction></div>
 		<div class="w-96 bg-gray-50 p-6 overflow-y-auto">
@@ -293,8 +342,8 @@
                disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
 			>
 				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1
-					? 'Brewery'
-					: 'Breweries'}
+				? 'Brewery'
+				: 'Breweries'}
 			</button>
 			{#if routingResult}
 				<div class="mt-6">
@@ -312,11 +361,11 @@
 							{/if}
 							<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
 								{#if step.step.type === 'start'}
-									<p>Start at {step.brewery.name}</p>
+									<p>Start</p>
 								{:else if step.step.type === 'end'}
-									<p>End at {step.brewery.name}</p>
+									<p>End</p>
 								{:else}
-									<p>{step.brewery.name}</p>
+									<p>{step.brewery?.name}</p>
 								{/if}
 							</div>
 						{/each}
@@ -328,7 +377,7 @@
 </main>
 
 <style>
-	:global(body) {
-		@apply m-0 p-0 font-sans;
-	}
+    :global(body) {
+        @apply m-0 p-0 font-sans;
+    }
 </style>

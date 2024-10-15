@@ -2,7 +2,7 @@ import { ORS_TOKEN } from '$env/static/private';
 import type { LongLat, routingProfile } from '$lib/types';
 import type { FeatureCollection } from 'geojson';
 
-export interface RouteQuery {
+export interface OSRRouteQuery {
 	profile: routingProfile;
 	start: LongLat;
 	end: LongLat;
@@ -14,7 +14,7 @@ export class Routing {
 	private apiKey: string = ORS_TOKEN;
 	private baseUrl = 'https://api.openrouteservice.org//v2/directions/';
 
-	async fetchRouter(query: RouteQuery): Promise<FeatureCollection> {
+	async fetchRouter(query: OSRRouteQuery): Promise<FeatureCollection> {
 		const url = `${this.baseUrl}${query.profile}`;
 		const urlParams = new URLSearchParams({
 			api_key: this.apiKey,
@@ -29,7 +29,7 @@ export class Routing {
 	}
 }
 
-export async function cachedRouting(query: RouteQuery) {
+export async function cachedRouting(query: OSRRouteQuery) {
 	const key = JSON.stringify(query);
 	if (cache.has(key)) {
 		return cache.get(key);
