@@ -1,5 +1,6 @@
 import { ORS_TOKEN } from '$env/static/private';
-import type { BreweryLocation, LongLat, routingProfile } from '$lib/types';
+import type { LongLat, routingProfile } from '$lib/types';
+import type { RouteQuery } from '$lib/types';
 
 interface VroomJob {
 	id: number;
@@ -61,21 +62,22 @@ export class RouteOptimizer {
 	private apiKey: string = ORS_TOKEN;
 	private baseUrl = 'https://api.openrouteservice.org/optimization';
 
-	async optimizeRoute(breweries: BreweryLocation[]): Promise<VroomResponse> {
+	async optimizeRoute(route: RouteQuery): Promise<VroomResponse> {
+		const breweries = route.breweries
 		if (breweries.length < 2) {
 			throw new Error('Need at least 2 locations to optimize route');
 		}
 
-		const request = this.createVroomRequest(breweries);
+		const request = this.createVroomRequest(route);
 		const optimizedRoute = await this.callOptimizationApi(request);
 
 		return this.processResponse(optimizedRoute);
 	}
 
-	private createVroomRequest(breweries: BreweryLocation[]): VroomRequest {
-		const startBrewery = breweries[0];
-		const jobs: VroomJob[] = breweries.slice(1).map((brewery, index) => ({
-			id: index + 1,
+	private createVroomRequest(route: RouteQuery): VroomRequest {
+
+		const jobs: VroomJob[] = route.breweries.map((brewery) => ({
+			id: brewery.id,
 			location: [brewery.lng, brewery.lat]
 		}));
 
@@ -85,8 +87,8 @@ export class RouteOptimizer {
 				{
 					id: 0,
 					profile: 'foot-walking',
-					start: [startBrewery.lng, startBrewery.lat],
-					end: [startBrewery.lng, startBrewery.lat]
+					start: route.start,
+					end: route.end
 				}
 			]
 		};

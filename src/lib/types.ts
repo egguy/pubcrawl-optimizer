@@ -2,10 +2,16 @@ import type { Tables } from '$lib/supabase';
 import type { VroomStep } from '$lib/routeoptimiser';
 
 export type Brewery = Tables<'brewries'>;
+
 export type BreweryLocation = Pick<Brewery, 'id' | 'lat' | 'lng'>;
+export interface RouteQuery {
+	start: LongLat;
+	end: LongLat;
+	breweries: BreweryLocation[];
+}
 
 export interface BrewerySteps {
-	brewery: Brewery;
+	brewery: Brewery|null;
 	step: VroomStep;
 	travelTime: number;
 }
