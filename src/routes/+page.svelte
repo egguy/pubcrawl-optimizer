@@ -5,7 +5,6 @@
 		divIcon,
 		geoJSON,
 		LatLng,
-		latLngBounds,
 		Map,
 		Marker,
 		// marker,
@@ -53,7 +52,7 @@
 	// let totalDuration = 0;
 	let totalDistance = 0;
 
-	const initialView = latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng()));
+	const initialView = new LatLng(-33.9055456778862, 151.15940896977347); // latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng())).getCenter();
 
 	let map: Map | null = null;
 	const routeLayer = L.featureGroup();
@@ -91,7 +90,7 @@
 	}
 
 	function createMap(container: HTMLElement): Map {
-		let m = new Map(container, { preferCanvas: true }).setView(initialView.getCenter(), 14);
+		let m = new Map(container, { preferCanvas: true }).setView(initialView, 16);
 		tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution:

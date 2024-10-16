@@ -3,6 +3,17 @@
 	import type { EventHandler } from 'svelte/elements';
 
 	import type { PageData } from './$types';
+	import { DefaultMarker, MapLibre, Popup } from 'svelte-maplibre';
+
+	let name: string;
+	let address: string;
+	let coords = {
+		lng: undefined,
+		lat: undefined
+	};
+	let lng: number;
+	let lat: number;
+	let phone: string;
 
 	export let data: PageData;
 	$: ({ breweries, supabase, user } = data);
@@ -23,6 +34,13 @@
 		invalidate('supabase:db:notes');
 		form.reset();
 	};
+
+	function addMarker(e: CustomEvent<MapMouseEvent>) {
+		if (!lng && !lat) {
+			coords.lng = e.detail.lngLat.lng;
+			coords.lat = e.detail.lngLat.lat;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -56,5 +74,52 @@
 				<td>{brewery.phone}</td>
 			</tr>
 		{/each}
+		<tr>
+			<td>
+				<input type="text" bind:value={name} />
+			</td>
+			<td>
+				<input type="text" bind:value={address} />
+			</td>
+			<td>
+				<input type="text" bind:value={coords.lng} />
+			</td>
+			<td>
+				<input type="text" bind:value={coords.lat} />
+			</td>
+			<td>
+				<input type="text" bind:value={phone} />
+			</td>
+		</tr>
 	</tbody>
 </table>
+<button
+	class="px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+	on:click={handleSubmit}>Add</button
+>
+<MapLibre
+	center={[151.15940896977347, -33.9055456778862]}
+	zoom={15}
+	standardControls
+	style="https://tiles.openfreemap.org/styles/liberty"
+	class="relative h w-full sm:aspect-video sm:max-h-full"
+	on:click={addMarker}
+>
+	{#if coords.lng && coords.lat}
+		<DefaultMarker bind:lngLat={coords} draggable>
+			<Popup offset={[0, -10]}>
+				<div class="text-lg font-bold">New Marker</div>
+			</Popup>
+		</DefaultMarker>
+	{/if}
+
+	{#each breweries as brewery}
+		{#if brewery.lng && brewery.lat}
+			<DefaultMarker lngLat={[brewery.lng, brewery.lat]}>
+				<Popup offset={[0, -10]}>
+					<div class="text-lg font-bold">{brewery.name}</div>
+				</Popup>
+			</DefaultMarker>
+		{/if}
+	{/each}
+</MapLibre>
