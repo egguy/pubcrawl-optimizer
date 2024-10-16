@@ -35,9 +35,9 @@
 	export let data;
 	const breweries: Brewery[] = data.breweries;
 	let selectedBreweries: Brewery[] = [];
-	let startPoint: LatLng|null = null;
+	let startPoint: LatLng | null = null;
 	let sameEndPoint = false;
-	let endPoint: LatLng|null = null;
+	let endPoint: LatLng | null = null;
 
 	const breweriesCoordinates: BreweryCoordinate[] = breweries.map((brewery) => {
 		const location = new LatLng(brewery.lat, brewery.lng);
@@ -49,7 +49,6 @@
 
 	let steps: BrewerySteps[] = [];
 
-
 	let routingResult: VroomResponse | null = null;
 	// let totalDuration = 0;
 	let totalDistance = 0;
@@ -58,7 +57,6 @@
 
 	let map: Map | null = null;
 	const routeLayer = L.featureGroup();
-
 
 	function createPopupContent(brewery: Brewery) {
 		return `
@@ -91,7 +89,6 @@
 			iconAnchor: [20, 5]
 		});
 	}
-
 
 	function createMap(container: HTMLElement): Map {
 		let m = new Map(container, { preferCanvas: true }).setView(initialView.getCenter(), 14);
@@ -174,17 +171,17 @@
 		routingResult = null;
 
 		// generate list of breweries location
-		if(!startPoint || !endPoint){
+		if (!startPoint || !endPoint) {
 			alert('Please select start and end point');
 			return;
 		}
-		const routeQuery:RouteQuery = {
+		const routeQuery: RouteQuery = {
 			start: [startPoint.lng, startPoint.lat],
 			end: [endPoint.lng, endPoint.lat],
 			breweries: selectedBreweries.map((brewery) => {
 				return { id: brewery.id, lat: brewery.lat, lng: brewery.lng };
 			})
-		}
+		};
 		const response = await fetch('/api/optimiser', {
 			method: 'POST',
 			body: JSON.stringify(routeQuery),
@@ -279,26 +276,25 @@
 	}
 
 	function onMapClick(e: L.LeafletMouseEvent) {
-		if(!map){
+		if (!map) {
 			return;
 		}
 		if (startPoint === null) {
 			startPoint = e.latlng;
 			new L.Marker(e.latlng).addTo(map);
-			if(sameEndPoint){
+			if (sameEndPoint) {
 				endPoint = e.latlng;
 			}
 		} else if (endPoint === null) {
 			endPoint = e.latlng;
 			new L.Marker(e.latlng).addTo(map);
-
 		}
 	}
 
-	function updateEndPoint(){
+	function updateEndPoint() {
 		console.log('updateEndPoint', sameEndPoint);
 		sameEndPoint = !sameEndPoint;
-		if(sameEndPoint){
+		if (sameEndPoint) {
 			endPoint = startPoint;
 		}
 	}
@@ -310,11 +306,11 @@
 	<div class="flex w-full">
 		<!-- input for start point -->
 		<div>
-				<span class="mr-3">Start Point :{startPoint? "✔": "❌"}</span>
+			<span class="mr-3">Start Point :{startPoint ? '✔' : '❌'}</span>
 
-			  <input type="checkbox" name="same" id="same" on:change={updateEndPoint} />
-				<label for="same" class="mr-3">Same as End Point</label>
-				<span>End Point :{endPoint? "✔": "❌"}</span>
+			<input type="checkbox" name="same" id="same" on:change={updateEndPoint} />
+			<label for="same" class="mr-3">Same as End Point</label>
+			<span>End Point :{endPoint ? '✔' : '❌'}</span>
 		</div>
 	</div>
 	<div class="flex h-full">
@@ -328,8 +324,12 @@
 						brewery={breweryCoordinate.brewery}
 						isSelected={selectedBreweries.some((b) => b.id === breweryCoordinate.brewery.id)}
 						on:toggle={toggleBrewery}
-						on:mouseenter={() => {breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery, 'green')); console.log('hover')}}
-						on:mouseleave={() => breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery))}
+						on:mouseenter={() => {
+							breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery, 'green'));
+							console.log('hover');
+						}}
+						on:mouseleave={() =>
+							breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery))}
 					/>
 				{/each}
 			</div>
@@ -342,8 +342,8 @@
                disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
 			>
 				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1
-				? 'Brewery'
-				: 'Breweries'}
+					? 'Brewery'
+					: 'Breweries'}
 			</button>
 			{#if routingResult}
 				<div class="mt-6">
@@ -377,7 +377,7 @@
 </main>
 
 <style>
-    :global(body) {
-        @apply m-0 p-0 font-sans;
-    }
+	:global(body) {
+		@apply m-0 p-0 font-sans;
+	}
 </style>

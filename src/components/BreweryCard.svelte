@@ -13,7 +13,11 @@
 	}
 </script>
 
-<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow" on:mouseenter on:mouseleave>
+<div
+	class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+	on:mouseenter
+	on:mouseleave
+>
 	<label class="flex items-start space-x-3 cursor-pointer">
 		<input
 			type="checkbox"

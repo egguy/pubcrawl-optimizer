@@ -11,7 +11,7 @@ export interface RouteQuery {
 }
 
 export interface BrewerySteps {
-	brewery: Brewery|null;
+	brewery: Brewery | null;
 	step: VroomStep;
 	travelTime: number;
 }

@@ -63,7 +63,7 @@ export class RouteOptimizer {
 	private baseUrl = 'https://api.openrouteservice.org/optimization';
 
 	async optimizeRoute(route: RouteQuery): Promise<VroomResponse> {
-		const breweries = route.breweries
+		const breweries = route.breweries;
 		if (breweries.length < 2) {
 			throw new Error('Need at least 2 locations to optimize route');
 		}
@@ -75,7 +75,6 @@ export class RouteOptimizer {
 	}
 
 	private createVroomRequest(route: RouteQuery): VroomRequest {
-
 		const jobs: VroomJob[] = route.breweries.map((brewery) => ({
 			id: brewery.id,
 			location: [brewery.lng, brewery.lat]
