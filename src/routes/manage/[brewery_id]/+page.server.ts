@@ -1,8 +1,8 @@
 /** @type {import('./$types').PageLoad} */
 export async function load({ depends, locals: { supabase }, params }) {
-	depends('supabase:db:brewries');
+	depends('supabase:db:brewery');
 	const { data } = await supabase
-		.from('brewries')
+		.from('brewery')
 		.select('*, tags(key, value)')
 		.match({ id: params.brewery_id })
 		.maybeSingle();
@@ -29,7 +29,7 @@ export const actions = {
 			throw new Error('Invalid longitude');
 		}
 		await supabase
-			.from('brewries')
+			.from('brewery')
 			.update({
 				name,
 				address,

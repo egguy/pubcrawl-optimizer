@@ -133,7 +133,6 @@
 
 	function toggleBrewery(event: CustomEvent<Brewery>) {
 		const brewery = event.detail;
-		// get brewryCooridnate object
 		const breweryCoordinate = breweriesCoordinates.find((b) => b.brewery.id === brewery.id);
 		if (!breweryCoordinate) {
 			return;
