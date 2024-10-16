@@ -76,6 +76,23 @@
 				</button>
 			</div>
 		</form>
+		<h2>Key values</h2>
+		<table class="min-w-full bg-white border border-gray-200">
+			<thead>
+				<tr class="bg-gray-100">
+					<th class="py-2 px-4 border-b border-gray-200 text-left">Name</th>
+					<th class="py-2 px-4 border-b border-gray-200 text-left">Value</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each brewery.tags as result}
+					<tr class="hover:bg-gray-50">
+						<td class="py-2 px-4 border-b border-gray-200">{result.key}</td>
+						<td class="py-2 typx-4 border-b border-gray-200">{result.value}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
 	</div>
 	<div class="w-full max-w-md h-full">
 		<MapLibre

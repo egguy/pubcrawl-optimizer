@@ -3,10 +3,9 @@ export async function load({ depends, locals: { supabase }, params }) {
 	depends('supabase:db:brewries');
 	const { data } = await supabase
 		.from('brewries')
-		.select('*')
+		.select('*, tags(key, value)')
 		.match({ id: params.brewery_id })
 		.maybeSingle();
-	// console.log(data);
 
 	return { brewery: data };
 }
@@ -16,7 +15,7 @@ export const actions = {
 	default: async ({ params, request, locals: { supabase } }) => {
 		// update the brewery
 		const { brewery_id } = params;
-		// console.log(event)
+
 		const data = await request.formData();
 		const name = data.get('name');
 		const address = data.get('address');
@@ -29,9 +28,7 @@ export const actions = {
 		if (isNaN(lng)) {
 			throw new Error('Invalid longitude');
 		}
-		// console.log()
-		console.log(brewery_id, name);
-		const result = await supabase
+		await supabase
 			.from('brewries')
 			.update({
 				name,
@@ -41,6 +38,5 @@ export const actions = {
 				lng
 			})
 			.eq('id', brewery_id);
-		console.log(result);
 	}
 };

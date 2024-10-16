@@ -147,7 +147,7 @@
 			selectedBreweries = [...selectedBreweries, brewery];
 			breweryCoordinate.marker.setIcon(creatMarker(brewery));
 		}
-		console.log(selectedBreweries);
+		// console.log(selectedBreweries);
 	}
 
 	async function planRoute() {
@@ -217,7 +217,6 @@
 			}
 			return acc;
 		}, [] as BrewerySteps[]);
-		console.log(steps);
 
 		// Extract coordinates from the response
 		const coordinates = routingResult.routes[0].steps.map((step) => {
@@ -245,7 +244,6 @@
 							}
 						});
 						const response: FeatureCollection = await data.json();
-						console.log('Route sugession', response);
 
 						L.geoJSON(response.features[0]).addTo(routeLayer);
 						totalDistance += response.features.reduce((acc, feature) => {
@@ -291,7 +289,6 @@
 	}
 
 	function updateEndPoint() {
-		console.log('updateEndPoint', sameEndPoint);
 		sameEndPoint = !sameEndPoint;
 		if (sameEndPoint) {
 			endPoint = startPoint;
@@ -325,7 +322,6 @@
 						on:toggle={toggleBrewery}
 						on:mouseenter={() => {
 							breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery, 'green'));
-							console.log('hover');
 						}}
 						on:mouseleave={() =>
 							breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery))}
