@@ -9,8 +9,8 @@
 		}
 	};
 </script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css" />
 
 <header class="flex gap-3 p-3">
 	<nav>
