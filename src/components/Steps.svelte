@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { BrewerySteps } from '$lib/types';
 
-	export let steps: BrewerySteps[] = [];
+	interface Props {
+		steps?: BrewerySteps[];
+	}
+
+	let { steps = [] }: Props = $props();
 </script>
 
 <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">

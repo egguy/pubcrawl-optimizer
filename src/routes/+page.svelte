@@ -31,12 +31,12 @@
 		brewery: Brewery;
 	}
 
-	export let data;
+	let { data } = $props();
 	const breweries: Brewery[] = data.breweries;
-	let selectedBreweries: Brewery[] = [];
-	let startPoint: LatLng | null = null;
+	let selectedBreweries: Brewery[] = $state([]);
+	let startPoint: LatLng | null = $state(null);
 	let sameEndPoint = false;
-	let endPoint: LatLng | null = null;
+	let endPoint: LatLng | null = $state(null);
 
 	const breweriesCoordinates: BreweryCoordinate[] = breweries.map((brewery) => {
 		const location = new LatLng(brewery.lat, brewery.lng);
@@ -46,11 +46,11 @@
 		return { marker, brewery };
 	});
 
-	let steps: BrewerySteps[] = [];
+	let steps: BrewerySteps[] = $state([]);
 
-	let routingResult: VroomResponse | null = null;
+	let routingResult: VroomResponse | null = $state(null);
 	// let totalDuration = 0;
-	let totalDistance = 0;
+	let totalDistance = $state(0);
 
 	const initialView = new LatLng(-33.9055456778862, 151.15940896977347); // latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng())).getCenter();
 
@@ -295,7 +295,7 @@
 	}
 </script>
 
-<svelte:window on:resize={resizeMap} />
+<svelte:window onresize={resizeMap} />
 
 <main class="h-screen">
 	<div class="flex w-full">
@@ -303,7 +303,7 @@
 		<div>
 			<span class="mr-3">Start Point :{startPoint ? '✔' : '❌'}</span>
 
-			<input type="checkbox" name="same" id="same" on:change={updateEndPoint} />
+			<input type="checkbox" name="same" id="same" onchange={updateEndPoint} />
 			<label for="same" class="mr-3">Same as End Point</label>
 			<span>End Point :{endPoint ? '✔' : '❌'}</span>
 		</div>
@@ -329,7 +329,7 @@
 			</div>
 
 			<button
-				on:click={planRoute}
+				onclick={planRoute}
 				disabled={selectedBreweries.length < 2}
 				class="w-full mt-6 py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg
                hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2

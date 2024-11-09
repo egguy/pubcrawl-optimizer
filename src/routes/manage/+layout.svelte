@@ -1,13 +1,15 @@
-<script>
-	export let data;
-	$: ({ supabase } = data);
+<script lang="ts">
+	let { data, children } = $props();
+	let { supabase } = $derived(data);
 
-	$: logout = async () => {
+	let logout = $derived(async () => {
 		const { error } = await supabase.auth.signOut();
 		if (error) {
 			console.error(error);
 		}
-	};
+	});
+
+	const children_render = $derived(children);
 </script>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css" />
@@ -16,9 +18,9 @@
 	<nav>
 		<a href="/">Home</a>
 	</nav>
-	<button on:click={logout}>Logout</button>
+	<button onclick={logout}>Logout</button>
 </header>
 
 <main class="container mx-auto">
-	<slot />
+	{@render children_render?.()}
 </main>

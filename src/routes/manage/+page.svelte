@@ -3,24 +3,29 @@
 
 	import type { PageData } from './$types';
 	import { DefaultMarker, MapLibre, Popup } from 'svelte-maplibre';
-	import { MapEvents } from 'svelte-maplibre';
 	import maplibregl from 'maplibre-gl';
 
-	let name: string;
-	let address: string;
+	let name: string = $state('');
+	let address: string = $state('');
 	let coords: {
 		lng: number;
 		lat: number;
-	};
+	} = $state({
+		lng: 0,
+		lat: 0
+	});
 	let lng: number;
 	let lat: number;
-	let phone: string;
+	let phone: string = $state('');
 
-	export let data: PageData;
-	$: ({ breweries, supabase } = data);
+	interface Props {
+		data: PageData;
+	}
 
-	$: handleSubmit = async (evt: SubmitEvent) => {
+	let { data }: Props = $props();
+	let { breweries, supabase } = $derived(data);
 
+	let handleSubmit = $derived(async (evt: SubmitEvent) => {
 		evt.preventDefault();
 		if (!evt.target) return;
 
@@ -34,7 +39,7 @@
 
 		invalidate('supabase:db:notes');
 		form.reset();
-	};
+	});
 
 	function addMarker(e: CustomEvent<maplibregl.MapMouseEvent & { map: maplibregl.Map }>) {
 		if (!lng && !lat) {
@@ -53,54 +58,54 @@
 <h1>DB</h1>
 {breweries.length}
 
-<form on:submit={handleSubmit}>
-<table class="w-full text-left table-auto min-w-max text-slate-800">
-	<thead>
-		<tr class="text-slate-500 border-b border-slate-300 bg-slate-50">
-			<th>Name</th>
-			<th>Address</th>
-			<th>Longitude</th>
-			<th>Latitude</th>
-			<th>Phone</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each breweries as brewery}
-			<tr class="p-4 border-b border-slate-200">
-				<td>
-					<a href={`/manage/${brewery.id}`} class="text-blue-500 hover:underline">
-						{brewery.name}
-					</a>
-				</td>
-				<td>{brewery.address}</td>
-				<td>{brewery.lng}</td>
-				<td>{brewery.lat}</td>
-				<td>{brewery.phone}</td>
+<form onsubmit={handleSubmit}>
+	<table class="w-full text-left table-auto min-w-max text-slate-800">
+		<thead>
+			<tr class="text-slate-500 border-b border-slate-300 bg-slate-50">
+				<th>Name</th>
+				<th>Address</th>
+				<th>Longitude</th>
+				<th>Latitude</th>
+				<th>Phone</th>
 			</tr>
-		{/each}
-		<tr>
-			<td>
-				<input type="text" bind:value={name} />
-			</td>
-			<td>
-				<input type="text" bind:value={address} />
-			</td>
-			<td>
-				<input type="text" bind:value={coords.lng} />
-			</td>
-			<td>
-				<input type="text" bind:value={coords.lat} />
-			</td>
-			<td>
-				<input type="text" bind:value={phone} />
-			</td>
-		</tr>
-	</tbody>
-</table>
-<button
-	class="px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-	>Add</button
->
+		</thead>
+		<tbody>
+			{#each breweries as brewery}
+				<tr class="p-4 border-b border-slate-200">
+					<td>
+						<a href={`/manage/${brewery.id}`} class="text-blue-500 hover:underline">
+							{brewery.name}
+						</a>
+					</td>
+					<td>{brewery.address}</td>
+					<td>{brewery.lng}</td>
+					<td>{brewery.lat}</td>
+					<td>{brewery.phone}</td>
+				</tr>
+			{/each}
+			<tr>
+				<td>
+					<input type="text" bind:value={name} />
+				</td>
+				<td>
+					<input type="text" bind:value={address} />
+				</td>
+				<td>
+					<input type="text" bind:value={coords.lng} />
+				</td>
+				<td>
+					<input type="text" bind:value={coords.lat} />
+				</td>
+				<td>
+					<input type="text" bind:value={phone} />
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<button
+		class="px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+		>Add</button
+	>
 </form>
 <MapLibre
 	center={[151.15940896977347, -33.9055456778862]}

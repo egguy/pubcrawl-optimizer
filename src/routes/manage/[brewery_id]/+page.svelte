@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { DefaultMarker, type LngLatLike, MapLibre, Popup } from 'svelte-maplibre';
 
-	/** @type {import('./$types').PageData} */
-	export let data;
+	interface Props {
+		data: import('./$types').PageData;
+	}
+
+	let { data }: Props = $props();
 
 	const brewery = data.brewery;
 	const coordinate: LngLatLike = [brewery.lng, brewery.lat];
@@ -104,7 +107,7 @@
 						<td class="py-2 px-4 border-b border-gray-200">
 							<button
 								class="text-red-500"
-								on:click={() => {
+								onclick={() => {
 									fetch(`?/delete-tag/${result.key}`, {
 										method: 'DELETE'
 									});

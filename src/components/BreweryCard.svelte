@@ -1,11 +1,18 @@
 <script lang="ts">
+	import { createBubbler } from 'svelte/legacy';
+
+	const bubble = createBubbler();
 	import { createEventDispatcher } from 'svelte';
 	import type { Brewery } from '$lib/types';
 
 	const dispatch = createEventDispatcher<{ toggle: Brewery }>();
 
-	export let brewery: Brewery;
-	export let isSelected: boolean = false;
+	interface Props {
+		brewery: Brewery;
+		isSelected?: boolean;
+	}
+
+	let { brewery, isSelected = $bindable(false) }: Props = $props();
 
 	function toggle() {
 		dispatch('toggle', brewery);
@@ -16,15 +23,15 @@
 <div
 	class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
 	role="region"
-	on:mouseenter
-	on:mouseleave
+	onmouseenter={bubble('mouseenter')}
+	onmouseleave={bubble('mouseleave')}
 >
 	<label class="flex items-start space-x-3 cursor-pointer">
 		<input
 			type="checkbox"
 			class="mt-1 h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
 			checked={isSelected}
-			on:change={toggle}
+			onchange={toggle}
 		/>
 		<div class="flex-1">
 			<h3 class="font-semibold text-lg">{brewery.name}</h3>
