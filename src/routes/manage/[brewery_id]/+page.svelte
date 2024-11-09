@@ -1,17 +1,28 @@
 <script lang="ts">
-	import { DefaultMarker, MapLibre, Popup } from 'svelte-maplibre';
+	import { DefaultMarker, type LngLatLike, MapLibre, Popup } from 'svelte-maplibre';
 
 	/** @type {import('./$types').PageData} */
 	export let data;
 
 	const brewery = data.brewery;
-	const coordinate = [brewery.lng, brewery.lat];
+	const coordinate: LngLatLike = [brewery.lng, brewery.lat];
+
+	// function deleteTag(key) {
+	// 	fetch(`?/delete-tag`, {
+	// 		method: 'DELETE',
+	// 		body: JSON.stringify({ key }),
+	// 		headers: {
+	// 			'Content-Type': 'application/json',
+	// 		},
+	//
+	// 	});
+	// }
 </script>
 
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
 	<div class="bg-white p-8 rounded shadow-md w-full max-w-md">
 		<h1 class="text-2xl font-bold mb-4">{brewery.name}</h1>
-		<form method="post" class="space-y-4">
+		<form method="post" class="space-y-4" action="?/edit">
 			<div>
 				<label for="name" class="block text-sm font-medium text-gray-700">Name</label>
 				<input
@@ -82,6 +93,7 @@
 				<tr class="bg-gray-100">
 					<th class="py-2 px-4 border-b border-gray-200 text-left">Name</th>
 					<th class="py-2 px-4 border-b border-gray-200 text-left">Value</th>
+					<th class="py-2 px-4 border-b border-gray-200 text-left">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -89,6 +101,16 @@
 					<tr class="hover:bg-gray-50">
 						<td class="py-2 px-4 border-b border-gray-200">{result.key}</td>
 						<td class="py-2 typx-4 border-b border-gray-200">{result.value}</td>
+						<td class="py-2 px-4 border-b border-gray-200">
+							<button
+								class="text-red-500"
+								on:click={() => {
+									fetch(`?/delete-tag/${result.key}`, {
+										method: 'DELETE'
+									});
+								}}>Delete</button
+							>
+						</td>
 					</tr>
 				{/each}
 			</tbody>

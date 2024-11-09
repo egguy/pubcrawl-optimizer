@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 
 import type { LongLat } from '$lib/types';
-import { cachedRouting, type RouteQuery } from '$lib/routing';
+import { cachedRouting, type OSRRouteQuery } from '$lib/routing';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -11,7 +11,7 @@ export async function POST({ request }) {
 		end: LongLat;
 	};
 
-	const query: RouteQuery = {
+	const query: OSRRouteQuery = {
 		profile: 'foot-walking',
 		start: breweries.start,
 		end: breweries.end

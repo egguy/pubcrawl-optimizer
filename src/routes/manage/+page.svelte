@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
-	import type { EventHandler } from 'svelte/elements';
 
 	import type { PageData } from './$types';
 	import { DefaultMarker, MapLibre, Popup } from 'svelte-maplibre';
+	import { MapEvents } from 'svelte-maplibre';
+	import maplibregl from 'maplibre-gl';
 
 	let name: string;
 	let address: string;
-	let coords = {
-		lng: undefined,
-		lat: undefined
+	let coords: {
+		lng: number;
+		lat: number;
 	};
 	let lng: number;
 	let lat: number;
 	let phone: string;
 
 	export let data: PageData;
-	$: ({ breweries, supabase, user } = data);
+	$: ({ breweries, supabase } = data);
 
-	let handleSubmit: EventHandler<SubmitEvent, HTMLFormElement>;
-	$: handleSubmit = async (evt) => {
+	$: handleSubmit = async (evt: SubmitEvent) => {
+
 		evt.preventDefault();
 		if (!evt.target) return;
 
@@ -35,10 +36,12 @@
 		form.reset();
 	};
 
-	function addMarker(e: CustomEvent<MapMouseEvent>) {
+	function addMarker(e: CustomEvent<maplibregl.MapMouseEvent & { map: maplibregl.Map }>) {
 		if (!lng && !lat) {
-			coords.lng = e.detail.lngLat.lng;
-			coords.lat = e.detail.lngLat.lat;
+			coords = {
+				lng: e.detail.lngLat.lng,
+				lat: e.detail.lngLat.lat
+			};
 		}
 	}
 </script>
@@ -50,6 +53,7 @@
 <h1>DB</h1>
 {breweries.length}
 
+<form on:submit={handleSubmit}>
 <table class="w-full text-left table-auto min-w-max text-slate-800">
 	<thead>
 		<tr class="text-slate-500 border-b border-slate-300 bg-slate-50">
@@ -95,8 +99,9 @@
 </table>
 <button
 	class="px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-	on:click={handleSubmit}>Add</button
+	>Add</button
 >
+</form>
 <MapLibre
 	center={[151.15940896977347, -33.9055456778862]}
 	zoom={15}
@@ -105,7 +110,7 @@
 	class="relative h w-full sm:aspect-video sm:max-h-full"
 	on:click={addMarker}
 >
-	{#if coords.lng && coords.lat}
+	{#if coords && coords.lng && coords.lat}
 		<DefaultMarker bind:lngLat={coords} draggable>
 			<Popup offset={[0, -10]}>
 				<div class="text-lg font-bold">New Marker</div>

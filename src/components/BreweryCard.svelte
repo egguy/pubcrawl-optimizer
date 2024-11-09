@@ -15,6 +15,7 @@
 
 <div
 	class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+	role="region"
 	on:mouseenter
 	on:mouseleave
 >

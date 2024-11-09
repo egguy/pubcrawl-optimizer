@@ -12,7 +12,7 @@ export async function load({ depends, locals: { supabase }, params }) {
 
 /** @type {import('./$types').Actions} */
 export const actions = {
-	default: async ({ params, request, locals: { supabase } }) => {
+	edit: async ({ params, request, locals: { supabase } }) => {
 		// update the brewery
 		const { brewery_id } = params;
 
@@ -38,5 +38,26 @@ export const actions = {
 				lng
 			})
 			.eq('id', brewery_id);
+	},
+	addMetadata: async ({ params, request, locals: { supabase } }) => {
+		const { brewery_id } = params;
+
+		const data = await request.formData();
+		const key = data.get('key');
+		const value = data.get('value');
+		await supabase.from('tags').insert({ brewery_id, key, value });
+	},
+	deleteMetadata: async ({ params, request, locals: { supabase } }) => {
+		const { brewery_id } = params;
+		const data = await request.formData();
+		const key = data.get('key');
+		await supabase.from('tags').delete().match({ brewery_id, key });
+	},
+	editMetadata: async ({ params, request, locals: { supabase } }) => {
+		const { brewery_id } = params;
+		const data = await request.formData();
+		const key = data.get('key');
+		const value = data.get('value');
+		await supabase.from('tags').update({ value }).match({ brewery_id, key });
 	}
 };

@@ -9,7 +9,7 @@
 	<ul class="">
 		{#each steps as step}
 			<li>
-				{step.brewery.name} - {step.step.duration}
+				{step.brewery?.name} - {step.step.duration}
 			</li>
 		{/each}
 	</ul>
