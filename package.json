@@ -43,7 +43,6 @@
 		"@types/geojson": "^7946.0.14",
 		"@types/leaflet": "^1.9.12",
 		"leaflet": "^1.9.4",
-		"openrouteservice-js": "^0.4.1",
 		"svelte-maplibre": "^0.9.14",
 		"svelte-multiselect": "^10.3.0"
 	}
