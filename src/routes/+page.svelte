@@ -12,7 +12,7 @@
 		polyline,
 		tileLayer
 	} from 'leaflet';
-	import type { Brewery, BrewerySteps, RouteQuery } from '$lib/types';
+	import type { BrewerySteps, RouteQuery } from '$lib/types';
 	import type { VroomResponse } from '$lib/routeoptimiser';
 	import type { Feature, FeatureCollection } from 'geojson';
 
@@ -20,6 +20,7 @@
 	import markerIconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 	import markerShadowUrl from 'leaflet/dist/images/marker-shadow.png';
 	import * as L from 'leaflet';
+	import type { SelectBrewery } from '$lib/server/db/schema';
 
 	L.Icon.Default.prototype.options.iconUrl = markerIconUrl;
 	L.Icon.Default.prototype.options.iconRetinaUrl = markerIconRetinaUrl;
@@ -28,12 +29,12 @@
 
 	interface BreweryCoordinate {
 		marker: Marker;
-		brewery: Brewery;
+		brewery: SelectBrewery;
 	}
 
 	let { data } = $props();
-	const breweries: Brewery[] = data.breweries;
-	let selectedBreweries: Brewery[] = $state([]);
+	const breweries: SelectBrewery[] = data.breweries;
+	let selectedBreweries: SelectBrewery[] = $state([]);
 	let startPoint: LatLng | null = $state(null);
 	let sameEndPoint = false;
 	let endPoint: LatLng | null = $state(null);
@@ -57,7 +58,7 @@
 	let map: Map | null = null;
 	const routeLayer = L.featureGroup();
 
-	function createPopupContent(brewery: Brewery) {
+	function createPopupContent(brewery: SelectBrewery) {
 		return `
       <div class="popup-content">
         <h3>${brewery.name}</h3>
@@ -66,11 +67,11 @@
     `;
 	}
 
-	function isSelected(brewery: Brewery): boolean {
+	function isSelected(brewery: SelectBrewery): boolean {
 		return selectedBreweries.some((b) => b.id === brewery.id);
 	}
 
-	function creatMarker(brewery: Brewery, color?: string) {
+	function creatMarker(brewery: SelectBrewery, color?: string) {
 		if (!color) {
 			if (isSelected(brewery)) {
 				color = 'red';
@@ -131,7 +132,7 @@
 
 	mapAction(document.getElementById('map'));
 
-	function toggleBrewery(event: CustomEvent<Brewery>) {
+	function toggleBrewery(event: CustomEvent<SelectBrewery>) {
 		const brewery = event.detail;
 		const breweryCoordinate = breweriesCoordinates.find((b) => b.brewery.id === brewery.id);
 		if (!breweryCoordinate) {
@@ -310,8 +311,8 @@
 	</div>
 	<div class="flex h-full">
 		<div id="map" class="flex-grow" use:mapAction></div>
-		<div class="w-96 bg-gray-50 p-6 overflow-y-auto">
-			<h2 class="text-2xl font-bold mb-6">Select Breweries</h2>
+		<div class="w-96 overflow-y-auto bg-gray-50 p-6">
+			<h2 class="mb-6 text-2xl font-bold">Select Breweries</h2>
 
 			<div class="space-y-4">
 				{#each breweriesCoordinates as breweryCoordinate}
@@ -331,9 +332,9 @@
 			<button
 				onclick={planRoute}
 				disabled={selectedBreweries.length < 2}
-				class="w-full mt-6 py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg
-               hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-               disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+				class="mt-6 w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white
+               transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500
+               focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400"
 			>
 				Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1
 					? 'Brewery'
@@ -341,7 +342,7 @@
 			</button>
 			{#if routingResult}
 				<div class="mt-6">
-					<h2 class="text-2xl font-bold mb-6">Route</h2>
+					<h2 class="mb-6 text-2xl font-bold">Route</h2>
 					<p>
 						Total Duration: {routingResult.summary.duration}s ({totalDistance}m)
 					</p>
@@ -353,7 +354,7 @@
 									<p>↓ Travel Time: {step.travelTime}s</p>
 								</div>
 							{/if}
-							<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+							<div class="rounded-lg bg-white p-4 shadow transition-shadow hover:shadow-md">
 								{#if step.step.type === 'start'}
 									<p>Start</p>
 								{:else if step.step.type === 'end'}

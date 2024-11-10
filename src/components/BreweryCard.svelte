@@ -3,12 +3,12 @@
 
 	const bubble = createBubbler();
 	import { createEventDispatcher } from 'svelte';
-	import type { Brewery } from '$lib/types';
+	import type { SelectBrewery } from '$lib/server/db/schema';
 
-	const dispatch = createEventDispatcher<{ toggle: Brewery }>();
+	const dispatch = createEventDispatcher<{ toggle: SelectBrewery }>();
 
 	interface Props {
-		brewery: Brewery;
+		brewery: SelectBrewery;
 		isSelected?: boolean;
 	}
 
@@ -21,22 +21,22 @@
 </script>
 
 <div
-	class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+	class="rounded-lg bg-white p-4 shadow transition-shadow hover:shadow-md"
 	role="region"
 	onmouseenter={bubble('mouseenter')}
 	onmouseleave={bubble('mouseleave')}
 >
-	<label class="flex items-start space-x-3 cursor-pointer">
+	<label class="flex cursor-pointer items-start space-x-3">
 		<input
 			type="checkbox"
-			class="mt-1 h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+			class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 			checked={isSelected}
 			onchange={toggle}
 		/>
 		<div class="flex-1">
-			<h3 class="font-semibold text-lg">{brewery.name}</h3>
+			<h3 class="text-lg font-semibold">{brewery.name}</h3>
 			{#if brewery.address}
-				<p class="text-xs text-gray-500 mt-1">{brewery.address}</p>
+				<p class="mt-1 text-xs text-gray-500">{brewery.address}</p>
 			{/if}
 		</div>
 	</label>

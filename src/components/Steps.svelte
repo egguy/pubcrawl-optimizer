@@ -8,7 +8,7 @@
 	let { steps = [] }: Props = $props();
 </script>
 
-<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+<div class="rounded-lg bg-white p-4 shadow transition-shadow hover:shadow-md">
 	<p>Steps</p>
 	<ul class="">
 		{#each steps as step}

@@ -1,8 +1,11 @@
-import { supabase } from '$lib/supabaseClient';
+import { db } from '$lib/server/db';
+import { brewery, type SelectBrewery } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function load() {
-	const { data } = await supabase.from('brewery').select().eq('active', true).order('name');
+	const results: SelectBrewery[] = await db.select().from(brewery).where(eq(brewery.active, true));
+	console.log(results);
 	return {
-		breweries: data ?? []
+		breweries: results ?? []
 	};
 }
