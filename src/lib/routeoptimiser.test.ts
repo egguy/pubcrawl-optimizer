@@ -4,8 +4,8 @@ import type { RouteQuery } from '$lib/types';
 
 describe('RouteOptimizer', () => {
 	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+		vi.restoreAllMocks()
+	})
 
 	const routeOptimizer = new RouteOptimizer();
 
@@ -14,34 +14,12 @@ describe('RouteOptimizer', () => {
 			start: [151.15940896977347, -33.9055456778862],
 			end: [151.15940896977347, -33.9055456778862],
 			breweries: [
-				{ id: 1, lat: -33.9155, lng: 151.1794 },
-				{ id: 2, lat: -33.8955, lng: 151.2094 }
+				{ id: 1, lat: -33.9055456778862, lng: 151.15940896977347 },
+				{ id: 2, lat: -33.9055456778862, lng: 151.15940896977347 }
 			]
 		};
 
-		const originalFetch = global.fetch;
-		global.fetch = vi.fn().mockResolvedValue({
-			ok: true,
-			json: () =>
-				Promise.resolve({
-					code: 0,
-					routes: [
-						{
-							steps: [
-								{
-									distance: 0,
-									duration: 0,
-									geometry: ''
-								}
-							]
-						}
-					]
-				})
-		});
-
 		const result = await routeOptimizer.optimizeRoute(routeQuery);
-
-		global.fetch = originalFetch;
 
 		expect(result).toHaveProperty('code', 0);
 		expect(result.routes[0].steps.length).toBeGreaterThan(0);
@@ -54,9 +32,7 @@ describe('RouteOptimizer', () => {
 			breweries: [{ id: 1, lat: -33.9055456778862, lng: 151.15940896977347 }]
 		};
 
-		await expect(routeOptimizer.optimizeRoute(routeQuery)).rejects.toThrow(
-			'Need at least 2 locations to optimize route'
-		);
+		await expect(routeOptimizer.optimizeRoute(routeQuery)).rejects.toThrow('Need at least 2 locations to optimize route');
 	});
 
 	it('throws error when API call fails', async () => {
@@ -71,19 +47,18 @@ describe('RouteOptimizer', () => {
 
 		const originalFetch = global.fetch;
 		global.fetch = vi.fn().mockResolvedValue({
-			ok: false,
-			statusText: 'Internal Server Error'
-		});
+				ok: false,
+				statusText: 'Internal Server Error'
+			})
+		;
 
-		await expect(routeOptimizer.optimizeRoute(routeQuery)).rejects.toThrow(
-			'API call failed: Internal Server Error'
-		);
+		await expect(routeOptimizer.optimizeRoute(routeQuery)).rejects.toThrow('API call failed: Internal Server Error');
 
 		global.fetch = originalFetch;
 	});
 
 	it('throws error when response is invalid', async () => {
-		const routeQuery: RouteQuery = {
+		const routeQuery: RouteQuery  = {
 			start: [151.15940896977347, -33.9055456778862],
 			end: [151.15940896977347, -33.9055456778862],
 			breweries: [
@@ -94,13 +69,12 @@ describe('RouteOptimizer', () => {
 
 		const originalFetch = global.fetch;
 		global.fetch = vi.fn().mockResolvedValue({
-			ok: true,
-			json: () => Promise.resolve({ code: 1 })
-		});
+				ok: true,
+				json: () => Promise.resolve({ code: 1 })
+			})
+		;
 
-		await expect(routeOptimizer.optimizeRoute(routeQuery)).rejects.toThrow(
-			'Invalid response from optimization service'
-		);
+		await expect(routeOptimizer.optimizeRoute(routeQuery)).rejects.toThrow('Invalid response from optimization service');
 
 		global.fetch = originalFetch;
 	});
