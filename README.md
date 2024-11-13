@@ -1,21 +1,22 @@
-# pub crawl optimizer
+# Pub Crawl Optimizer
 
 A proof of concept for a pub crawl optimizer. The user can input a list of pubs and the app will calculate the shortest path between all of them.
 
 ## Features
 
-- map
-- Departure and arrival point can be set separately
-- Create the most optimal route between all pubs
+- Interactive map interface for visualizing routes
+- Separate departure and arrival points configuration
+- Optimal route calculation between multiple pubs
+- Distance and estimated travel time calculation
 
 ## Tech stack
 
-- SvelteKit
-- TailwindCSS
-- Leaflet
-- OSRM (routing engine)
-- Vroom (routing optimization)
-- SQLite + Drizzle
+- SvelteKit - Full-stack web application framework
+- TailwindCSS - Utility-first CSS framework
+- Leaflet - Interactive map visualization
+- OSRM - High-performance routing engine
+- Vroom - Vehicle routing optimization
+- SQLite + Drizzle - Lightweight database with type-safe ORM
 
 ## Configuration
 
