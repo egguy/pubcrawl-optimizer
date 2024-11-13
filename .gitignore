@@ -23,3 +23,5 @@ vite.config.ts.timestamp-*
 
 # idea
 .idea/
+.mise.toml
+local.db
