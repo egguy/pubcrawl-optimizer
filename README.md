@@ -21,9 +21,24 @@ A proof of concept for a pub crawl optimizer. The user can input a list of pubs 
 
 The app is configured using environment variables. The following variables are available:
 
-- `DATABASE_URL`: The URL to the SQLite database. Default: `:memory:`, use `file:./database.sqlite` to store the database in a file.
-- `ORS_TOKEN`: A token for the [OpenRouteService API](https://openrouteservice.org/).
--
+### Required Environment Variables
+
+- `ORS_TOKEN`: OpenRouteService API token (Required)
+  - Obtain from: [OpenRouteService signup](https://openrouteservice.org/dev/#/signup)
+  - Format: String
+
+### Optional Environment Variables
+
+- `DATABASE_URL`: SQLite database URL
+  - Default: `:memory:`
+  - Example: `file:./database.sqlite`
+
+### Example .env file
+
+```env
+DATABASE_URL=file:./database.sqlite
+ORS_TOKEN=your_token_here
+```
 
 ## Developing
 
@@ -52,11 +67,11 @@ You can preview the production build with `npm run preview`.
 
 ### Building and running the project
 
-#### NodeJS
+#### Node.js
 
 ```bash
-$ npm run build
-$ node build
+npm run build
+node build
 ```
 
 #### Docker
@@ -64,7 +79,7 @@ $ node build
 You can use docker to build the project as well. The following command will build the project and run it in a container.
 
 ```bash
-$ docker build -t pub-crawl-optimizer .
+docker build -t pub-crawl-optimizer .
 # Run the container and delete it when it stops
-$ docker run --it -v ./local.db --env-file=.env.local -p 3000:3000 pub-crawl-optimizer
+docker run --it -v ./local.db --env-file=.env.local -p 3000:3000 pub-crawl-optimizer
 ```
