@@ -22,6 +22,7 @@
 <div
 	class="rounded-lg bg-white p-4 shadow transition-shadow hover:shadow-md"
 	role="region"
+	aria-label="Brewery selection card"
 	{onmouseenter}
 	{onmouseleave}
 >
@@ -30,6 +31,7 @@
 			type="checkbox"
 			class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 			checked={isSelected}
+			aria-label="Select brewery"
 			{onchange}
 		/>
 		<div class="flex-1">
