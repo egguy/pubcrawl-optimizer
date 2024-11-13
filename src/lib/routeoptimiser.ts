@@ -1,4 +1,4 @@
-import { ORS_TOKEN } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { LongLat, routingProfile } from '$lib/types';
 import type { RouteQuery } from '$lib/types';
 
@@ -59,7 +59,7 @@ export interface VroomResponse {
 }
 
 export class RouteOptimizer {
-	private apiKey: string = ORS_TOKEN;
+	private apiKey: string = env.ORS_TOKEN;
 	private baseUrl = 'https://api.openrouteservice.org/optimization';
 
 	async optimizeRoute(route: RouteQuery): Promise<VroomResponse> {

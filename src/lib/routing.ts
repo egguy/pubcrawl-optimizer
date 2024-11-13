@@ -1,4 +1,4 @@
-import { ORS_TOKEN } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { LongLat, routingProfile } from '$lib/types';
 import type { FeatureCollection } from 'geojson';
 
@@ -11,7 +11,7 @@ export interface OSRRouteQuery {
 const cache = new Map<string, FeatureCollection>();
 
 export class Routing {
-	private apiKey: string = ORS_TOKEN;
+	private apiKey: string = env.ORS_TOKEN;
 	private baseUrl = 'https://api.openrouteservice.org//v2/directions/';
 
 	async fetchRouter(query: OSRRouteQuery): Promise<FeatureCollection> {
