@@ -132,8 +132,7 @@
 
 	mapAction(document.getElementById('map'));
 
-	function toggleBrewery(event: CustomEvent<SelectBrewery>) {
-		const brewery = event.detail;
+	function toggleBrewery(brewery: SelectBrewery) {
 		const breweryCoordinate = breweriesCoordinates.find((b) => b.brewery.id === brewery.id);
 		if (!breweryCoordinate) {
 			return;
@@ -147,7 +146,6 @@
 			selectedBreweries = [...selectedBreweries, brewery];
 			breweryCoordinate.marker.setIcon(creatMarker(brewery));
 		}
-		// console.log(selectedBreweries);
 	}
 
 	async function planRoute() {
@@ -319,11 +317,11 @@
 					<BreweryCard
 						brewery={breweryCoordinate.brewery}
 						isSelected={selectedBreweries.some((b) => b.id === breweryCoordinate.brewery.id)}
-						on:toggle={toggleBrewery}
-						on:mouseenter={() => {
+						toggle={toggleBrewery}
+						onmouseenter={() => {
 							breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery, 'green'));
 						}}
-						on:mouseleave={() =>
+						onmouseleave={() =>
 							breweryCoordinate.marker.setIcon(creatMarker(breweryCoordinate.brewery))}
 					/>
 				{/each}
@@ -371,8 +369,3 @@
 	</div>
 </main>
 
-<style>
-	:global(body) {
-		@apply m-0 p-0 font-sans;
-	}
-</style>

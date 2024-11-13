@@ -6,7 +6,6 @@ import { eq } from 'drizzle-orm';
 
 export async function load() {
 	const results: SelectBrewery[] = await db.select().from(brewery).where(eq(brewery.active, true));
-	console.log(results);
 	return {
 		breweries: results ?? []
 	};
