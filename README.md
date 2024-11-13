@@ -1,18 +1,44 @@
-# create-svelte
+# Pub Crawl Optimizer
 
-Everything you need to build a Svelte project, powered by
-[`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+A proof of concept for a pub crawl optimizer. The user can input a list of pubs and the app will calculate the shortest path between all of them.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Interactive map interface for visualizing routes
+- Separate departure and arrival points configuration
+- Optimal route calculation between multiple pubs
+- Distance and estimated travel time calculation
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## Tech stack
 
-# create a new project in my-app
-npm create svelte@latest my-app
+- SvelteKit - Full-stack web application framework
+- TailwindCSS - Utility-first CSS framework
+- Leaflet - Interactive map visualization
+- OSRM - High-performance routing engine
+- Vroom - Vehicle routing optimization
+- SQLite + Drizzle - Lightweight database with type-safe ORM
+
+## Configuration
+
+The app is configured using environment variables. The following variables are available:
+
+### Required Environment Variables
+
+- `ORS_TOKEN`: OpenRouteService API token (Required)
+  - Obtain from: [OpenRouteService signup](https://openrouteservice.org/dev/#/signup)
+  - Format: String
+
+### Optional Environment Variables
+
+- `DATABASE_URL`: SQLite database URL
+  - Default: `:memory:`
+  - Example: `file:./database.sqlite`
+
+### Example .env file
+
+```env
+DATABASE_URL=file:./database.sqlite
+ORS_TOKEN=your_token_here
 ```
 
 ## Developing
@@ -40,4 +66,21 @@ You can preview the production build with `npm run preview`.
 > To deploy your app, you may need to install an
 > [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
 
-# beer-optimizer
+### Building and running the project
+
+#### Node.js
+
+```bash
+npm run build
+node build
+```
+
+#### Docker
+
+You can use docker to build the project as well. The following command will build the project and run it in a container.
+
+```bash
+docker build -t pub-crawl-optimizer .
+# Run the container and delete it when it stops
+docker run --it -v ./local.db --env-file=.env.local -p 3000:3000 pub-crawl-optimizer
+```
