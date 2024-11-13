@@ -18,9 +18,8 @@ export async function POST({ request }) {
 	};
 
 	try {
-		const reponse = await cachedRouting(query);
-		console.log(reponse);
-		return json(reponse);
+		const response = await cachedRouting(query);
+		return json(response);
 	} catch (err) {
 		console.error(err);
 		return error(400, 'Error creating route');

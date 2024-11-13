@@ -11,7 +11,6 @@ export async function POST({ request }) {
 
 	try {
 		const optimizedRoute = await optimizer.optimizeRoute(routeQuery);
-		console.log(optimizedRoute);
 		return json(optimizedRoute);
 	} catch (err) {
 		console.error(err);
