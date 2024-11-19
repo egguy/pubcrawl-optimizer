@@ -27,7 +27,7 @@
 	const ROUTING = 3;
 
 	let { data } = $props();
-	const breweries = data.breweries;
+	const breweries: BreweryTags[] = data.breweries;
 	let selectedBreweries: SelectBrewery[] = $state([]);
 	let startPoint: LatLng | null = $state(null);
 	let sameEndPoint = false;
