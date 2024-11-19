@@ -1,5 +1,5 @@
 import type { VroomStep } from '$lib/routeoptimiser';
-import type { SelectBrewery } from '$lib/server/db/schema';
+import type { SelectBrewery, SelectTags } from '$lib/server/db/schema';
 
 export type BreweryLocation = Pick<SelectBrewery, 'id' | 'lat' | 'lng'>;
 export interface RouteQuery {
@@ -24,3 +24,5 @@ export type routingProfile =
 	| 'cycling-mountain'
 	| 'cycling-electric';
 export type LongLat = [number, number];
+
+export type BreweryTags = SelectBrewery & { tags: Pick<SelectTags, 'key' | 'value'>[] };

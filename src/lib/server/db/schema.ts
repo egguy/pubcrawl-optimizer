@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, real, primaryKey } from 'drizzle-orm/sqlite-core';
+import { relations } from 'drizzle-orm';
 
 export const brewery = sqliteTable('brewery', {
 	id: integer('id').primaryKey(),
@@ -13,6 +14,10 @@ export const brewery = sqliteTable('brewery', {
 
 export type SelectBrewery = typeof brewery.$inferSelect;
 export type InsertBrewery = typeof brewery.$inferInsert;
+
+export const breweryRelations = relations(brewery, ({ many }) => ({
+	tags: many(tags)
+}));
 
 export const tags = sqliteTable(
 	'tags',
@@ -30,3 +35,13 @@ export const tags = sqliteTable(
 		};
 	}
 );
+
+export const tagRelations = relations(tags, ({ one }) => ({
+	brewery: one(brewery, {
+		fields: [tags.brewery],
+		references: [brewery.id]
+	})
+}));
+
+export type SelectTags = typeof tags.$inferSelect;
+export type InsertTags = typeof tags.$inferInsert;

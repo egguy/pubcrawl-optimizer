@@ -1,18 +1,8 @@
 <script lang="ts">
 	import BreweryCard from '../components/BreweryCard.svelte';
 	import { MarkerIcon } from '$lib/icons';
-	import {
-		divIcon,
-		geoJSON,
-		LatLng,
-		Map,
-		Marker,
-		// marker,
-		Polyline,
-		polyline,
-		tileLayer
-	} from 'leaflet';
-	import type { BrewerySteps, RouteQuery } from '$lib/types';
+	import { divIcon, geoJSON, LatLng, Map, Marker, Polyline, polyline, tileLayer } from 'leaflet';
+	import type { BrewerySteps, BreweryTags, RouteQuery } from '$lib/types';
 	import type { VroomResponse } from '$lib/routeoptimiser';
 	import type { Feature, FeatureCollection } from 'geojson';
 
@@ -30,14 +20,14 @@
 
 	interface BreweryCoordinate {
 		marker: Marker;
-		brewery: SelectBrewery;
+		brewery: BreweryTags;
 	}
 	const IDLE = 1;
 	const OPTIMIZING = 2;
 	const ROUTING = 3;
 
 	let { data } = $props();
-	const breweries: SelectBrewery[] = data.breweries;
+	const breweries = data.breweries;
 	let selectedBreweries: SelectBrewery[] = $state([]);
 	let startPoint: LatLng | null = $state(null);
 	let sameEndPoint = false;
@@ -209,7 +199,7 @@
 			console.error(error);
 			alert('Failed to plan route');
 			routingState = IDLE;
-			return
+			return;
 		}
 
 		routingState = ROUTING;
@@ -269,7 +259,6 @@
 					} catch (error) {
 						console.error(error);
 						polyline([coordinate, nextCoordinate], { color: 'red' }).addTo(routeLayer);
-
 					}
 
 					geoJSON(routes).addTo(routeLayer);
@@ -355,8 +344,8 @@
 			>
 				{#if routingState === IDLE}
 					Visit {selectedBreweries.length} Selected {selectedBreweries.length === 1
-					? 'Brewery'
-					: 'Breweries'}
+						? 'Brewery'
+						: 'Breweries'}
 				{:else if routingState === OPTIMIZING}
 					<LoadingSpinner>Optimizing Route...</LoadingSpinner>
 				{:else if routingState === ROUTING}
@@ -393,4 +382,3 @@
 		</div>
 	</div>
 </main>
-
