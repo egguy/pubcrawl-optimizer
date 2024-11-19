@@ -5,19 +5,24 @@ import { eq, inArray } from 'drizzle-orm';
 import type { BreweryTags } from '$lib/types';
 
 export async function load() {
-	const results: BreweryTags[] = await db.query.brewery.findMany({
-		where: eq(brewery.active, true),
-		with: {
-			tags: {
-				columns: {
-					key: true,
-					value: true
-				},
-				where: inArray(tags.key, Array.from(displayTags.keys()))
+	try {
+		const results: BreweryTags[] = await db.query.brewery.findMany({
+			where: eq(brewery.active, true),
+			with: {
+				tags: {
+					columns: {
+						key: true,
+						value: true
+					},
+					where: inArray(tags.key, Array.from(displayTags.keys()))
+				}
 			}
-		}
-	});
-	return {
-		breweries: results ?? []
-	};
+		});
+		return {
+			breweries: results ?? []
+		};
+	} catch (error) {
+		console.error('Failed to fetch breweries:', error);
+		throw error;
+	}
 }
