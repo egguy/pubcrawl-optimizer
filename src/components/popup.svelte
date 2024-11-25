@@ -1,10 +1,10 @@
 <script lang="ts">
-	let brewery: {
+	const  brewery: {
 		name: string;
 		type: string;
 		rating: number;
 		address: string;
-	};
+	} = $props();
 </script>
 
 <div class="popup-content">
