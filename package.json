@@ -19,8 +19,8 @@
 	"devDependencies": {
 		"@iconify/svelte": "^4.0.2",
 		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/adapter-node": "^5.2.6",
-		"@sveltejs/kit": "^2.5.27",
+		"@sveltejs/adapter-node": "^5.2.9",
+		"@sveltejs/kit": "^2.9.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/eslint": "^9.6.0",
 		"autoprefixer": "^10.4.20",
@@ -33,7 +33,7 @@
 		"prettier": "^3.1.1",
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.5",
-		"svelte": "^5.0.0",
+		"svelte": "^5.4.0",
 		"svelte-check": "^4.0.0",
 		"tailwindcss": "^3.4.13",
 		"tsx": "^4.19.2",
@@ -50,7 +50,81 @@
 		"dotenv": "^16.4.5",
 		"drizzle-orm": "^0.36.1",
 		"leaflet": "^1.9.4",
-		"svelte-maplibre": "^0.9.14",
-		"svelte-multiselect": "^10.3.0"
+		"svelte-maplibre": "^0.9.14"
+	},
+	"exports": {
+		"./package.json": "./package.json",
+		"./icons": {
+			"types": "./package/icons.d.ts",
+			"default": "./package/icons.js"
+		},
+		".": {
+			"types": "./package/index.d.ts",
+			"svelte": "./package/index.js",
+			"default": "./package/index.js"
+		},
+		"./routeoptimiser.test": {
+			"types": "./package/routeoptimiser.test.d.ts",
+			"default": "./package/routeoptimiser.test.js"
+		},
+		"./routeoptimiser": {
+			"types": "./package/routeoptimiser.d.ts",
+			"default": "./package/routeoptimiser.js"
+		},
+		"./routing": {
+			"types": "./package/routing.d.ts",
+			"default": "./package/routing.js"
+		},
+		"./server/db": {
+			"types": "./package/server/db/index.d.ts",
+			"svelte": "./package/server/db/index.js",
+			"default": "./package/server/db/index.js"
+		},
+		"./server/db/schema": {
+			"types": "./package/server/db/schema.d.ts",
+			"default": "./package/server/db/schema.js"
+		},
+		"./tags": {
+			"types": "./package/tags.d.ts",
+			"default": "./package/tags.js"
+		},
+		"./types": {
+			"types": "./package/types.d.ts",
+			"default": "./package/types.js"
+		}
+	},
+	"files": [
+		"package"
+	],
+	"typesVersions": {
+		">4.0": {
+			"icons": [
+				"./package/icons.d.ts"
+			],
+			"index.d.ts": [
+				"./package/index.d.ts"
+			],
+			"routeoptimiser.test": [
+				"./package/routeoptimiser.test.d.ts"
+			],
+			"routeoptimiser": [
+				"./package/routeoptimiser.d.ts"
+			],
+			"routing": [
+				"./package/routing.d.ts"
+			],
+			"server/db": [
+				"./package/server/db/index.d.ts"
+			],
+			"server/db/schema": [
+				"./package/server/db/schema.d.ts"
+			],
+			"tags": [
+				"./package/tags.d.ts"
+			],
+			"types": [
+				"./package/types.d.ts"
+			]
+		}
 	}
 }
