@@ -19,10 +19,21 @@ describe('RouteOptimizer', () => {
 			]
 		};
 
+		// Mock the fetch API to return a valid response
+		const originalFetch = global.fetch;
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: () => Promise.resolve({
+				code: 0,
+				routes: [{ steps: [{ distance: 100, duration: 10 }] }]
+			})
+		});
 		const result = await routeOptimizer.optimizeRoute(routeQuery);
 
 		expect(result).toHaveProperty('code', 0);
 		expect(result.routes[0].steps.length).toBeGreaterThan(0);
+
+		global.fetch = originalFetch;
 	});
 
 	it('throws error when less than 2 locations are provided', async () => {
