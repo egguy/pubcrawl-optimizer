@@ -47,7 +47,7 @@
 		"@types/geojson": "^7946.0.14",
 		"@types/leaflet": "^1.9.12",
 		"dotenv": "^16.4.5",
-		"drizzle-orm": "^0.37.0",
+		"drizzle-orm": "^0.39.0",
 		"leaflet": "^1.9.4",
 		"svelte-maplibre": "^0.9.14"
 	},
