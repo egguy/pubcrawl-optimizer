@@ -49,7 +49,7 @@
 		"dotenv": "^16.4.5",
 		"drizzle-orm": "^0.39.0",
 		"leaflet": "^1.9.4",
-		"svelte-maplibre": "^0.9.14"
+		"svelte-maplibre": "^1.0.0"
 	},
 	"exports": {
 		"./package.json": "./package.json",
