@@ -43,7 +43,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@libsql/client": "^0.14.0",
+		"@libsql/client": "^0.17.0",
 		"@types/geojson": "^7946.0.14",
 		"@types/leaflet": "^1.9.12",
 		"dotenv": "^16.4.5",
