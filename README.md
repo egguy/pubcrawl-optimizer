@@ -50,6 +50,12 @@ Once you've created a project and installed dependencies with `npm install` (or
 npx drizzle-kit push
 ```
 
+To inspect the database visually, run Drizzle Studio:
+
+```bash
+npx drizzle-kit studio
+```
+
 Then start a development server:
 
 ```bash
