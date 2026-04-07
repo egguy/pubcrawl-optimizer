@@ -34,13 +34,23 @@
 	let endPoint: LatLng | null = $state(null);
 	let routingState = $state(IDLE);
 
-	const breweriesCoordinates: BreweryCoordinate[] = $derived(breweries.map((brewery) => {
-		const location = new LatLng(brewery.lat, brewery.lng);
-		const marker = L.marker(location, { icon: creatMarker(brewery) }).bindPopup(
-			createPopupContent(brewery)
-		);
-		return { marker, brewery };
-	}));
+	let breweriesCoordinates: BreweryCoordinate[] = $state([]);
+
+	$effect(() => {
+		const currentMap = map;
+		const coords = breweries.map((brewery) => {
+			const location = new LatLng(brewery.lat, brewery.lng);
+			const marker = L.marker(location, { icon: creatMarker(brewery) }).bindPopup(
+				createPopupContent(brewery)
+			);
+			if (currentMap) {
+				marker.addTo(currentMap);
+			}
+			return { marker, brewery };
+		});
+		breweriesCoordinates = coords;
+		return () => coords.forEach(({ marker }) => marker.remove());
+	});
 
 	let steps: BrewerySteps[] = $state([]);
 
@@ -50,7 +60,7 @@
 
 	const initialView = new LatLng(-33.9055456778862, 151.15940896977347); // latLngBounds(breweriesCoordinates.map((b) => b.marker.getLatLng())).getCenter();
 
-	let map: Map | null = null;
+	let map: Map | null = $state(null);
 	const routeLayer = L.featureGroup();
 
 	function createPopupContent(brewery: SelectBrewery) {
@@ -104,14 +114,6 @@
 		}
 
 		map = createMap(container);
-		// Add markers for each brewery
-		breweriesCoordinates.forEach((brewery) => {
-			if (!map) {
-				return;
-			}
-			brewery.marker.addTo(map);
-		});
-
 		map.on('click', onMapClick);
 
 		return {
