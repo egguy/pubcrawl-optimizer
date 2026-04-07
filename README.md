@@ -44,7 +44,19 @@ ORS_TOKEN=your_token_here
 ## Developing
 
 Once you've created a project and installed dependencies with `npm install` (or
-`pnpm install` or `yarn`), start a development server:
+`pnpm install` or `yarn`), set up your `.env` file (see Configuration above), then initialize the database:
+
+```bash
+npx drizzle-kit push
+```
+
+To inspect the database visually, run Drizzle Studio:
+
+```bash
+npx drizzle-kit studio
+```
+
+Then start a development server:
 
 ```bash
 npm run dev

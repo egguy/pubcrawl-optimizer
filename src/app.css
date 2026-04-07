@@ -1,8 +1,5 @@
+@import "tailwindcss";
 @import 'leaflet/dist/leaflet.css';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 .map-marker {
 	width: 100%;
@@ -14,6 +11,6 @@
 	height: 100%;
 }
 
-:global(body) {
+body {
 	@apply m-0 p-0 font-sans;
 }
