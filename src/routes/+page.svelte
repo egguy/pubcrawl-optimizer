@@ -27,20 +27,20 @@
 	const ROUTING = 3;
 
 	let { data } = $props();
-	const breweries: BreweryTags[] = data.breweries;
+	const breweries: BreweryTags[] = $derived(data.breweries);
 	let selectedBreweries: SelectBrewery[] = $state([]);
 	let startPoint: LatLng | null = $state(null);
 	let sameEndPoint = false;
 	let endPoint: LatLng | null = $state(null);
 	let routingState = $state(IDLE);
 
-	const breweriesCoordinates: BreweryCoordinate[] = breweries.map((brewery) => {
+	const breweriesCoordinates: BreweryCoordinate[] = $derived(breweries.map((brewery) => {
 		const location = new LatLng(brewery.lat, brewery.lng);
 		const marker = L.marker(location, { icon: creatMarker(brewery) }).bindPopup(
 			createPopupContent(brewery)
 		);
 		return { marker, brewery };
-	});
+	}));
 
 	let steps: BrewerySteps[] = $state([]);
 
