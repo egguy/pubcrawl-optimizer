@@ -25,7 +25,7 @@ The app is configured using environment variables. The following variables are a
 ### Required Environment Variables
 
 - `ORS_TOKEN`: OpenRouteService API token (Required)
-  - Obtain from: [OpenRouteService signup](https://openrouteservice.org/dev/#/signup)
+  - Obtain from: [OpenRouteService signup](https://account.heigit.org/login?redirect=https://openrouteservice.org/dev/%23/api-docs)
   - Format: String
 
 ### Optional Environment Variables
